@@ -2,16 +2,19 @@
 
 ## Synopsis
 
-The `aws-cloudformation-ecs-senzing-stack-basic` demonstrates a Senzing deployment using an AWS Cloudformation template.
+`aws-cloudformation-ecs-senzing-stack-basic` deploys Senzing using an AWS Cloudformation template.
+Before deploying this Cloudformation template,
+[aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
+must be deployed.
 
 ## Overview
 
 The `aws-cloudformation-ecs-senzing-stack-basic` demonstration is an AWS Cloudformation template that creates the following resources:
 
 1. AWS infrastructure
-    1. VPC
+    1. Elastic IP address
+    1. NAT Gateway
     1. Subnets
-    1. Internet Gateway
     1. Routes
     1. IAM Roles and Policies
     1. Logging
@@ -19,7 +22,6 @@ The `aws-cloudformation-ecs-senzing-stack-basic` demonstration is an AWS Cloudfo
     1. AWS Cognito
     1. AWS Elastic Container Service (ECS) Fargate
     1. AWS Elastic File System (EFS)
-    1. AWS Relational Data Service (RDS) Aurora Postgres Serverless
     1. AWS Simple Queue Service (SQS)
 1. Senzing services
     1. Senzing API server
@@ -85,7 +87,6 @@ describing where we can improve.   Now on with the show...
 
 ## Expectations
 
-- **Space:** This repository and demonstration require 6 GB free disk space.
 - **Time:** Budget 40 minutes to get the demonstration up-and-running.
 - **Background knowledge:** This repository assumes a working knowledge of:
   - [AWS Cloudformation](https://github.com/Senzing/knowledge-base/blob/master/WHATIS/aws-cloudformation.md)
@@ -98,7 +99,7 @@ describing where we can improve.   Now on with the show...
    With appropriate permissions, the
    [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/)
    can help evaluate costs.
-1. Visit [AWS Cloudformation with Senzing template](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=senzing-poc&templateURL=https://s3.amazonaws.com/public-read-access/aws-cloudformation-ecs-senzing-stack-basic/cloudformation.yaml)
+1. Visit [AWS Cloudformation with Senzing template](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=senzing-basic&templateURL=https://s3.amazonaws.com/public-read-access/aws-cloudformation-ecs-senzing-stack-basic/cloudformation.yaml)
 1. At lower-right, click on "Next" button.
 1. In **Specify stack details**
     1. In **Parameters**
@@ -109,12 +110,17 @@ describing where we can improve.   Now on with the show...
             1. Accept the End User License Agreement
         1. In **Security**
             1. Enter your email address.  Example: `me@example.com`
+        1. In **Identify existing resources**
+            1. Enter the stack name of the previously deployed
+               [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
+               Cloudformation stack
+               Example:  `senzing-db`
     1. Other parameters are optional.
        The default values are fine.
     1. At lower-right, click "Next" button.
 1. In **Configure stack options**
     1. At lower-right, click "Next" button.
-1. In **Review senzing-poc**
+1. In **Review senzing-basic**
     1. Near the bottom, in **Capabilities**
         1. Check ":ballot_box_with_check: I acknowledge that AWS CloudFormation might create IAM resources."
     1. At lower-right, click "Create stack" button.
@@ -133,24 +139,22 @@ to draw attention to this AWS Cloudformation defect.
 
 1. Visit [AWS CloudFormation console](https://console.aws.amazon.com/cloudformation/home).
     1. Make sure correct AWS region is selected.
-1. Wait until "senzing-poc" status is `CREATE_COMPLETE`.
+1. Wait until "senzing-basic" status is `CREATE_COMPLETE`.
     1. Senzing formation takes about 20 minutes to fully deploy.
     1. May have to hit the refresh button a few times to get updated information.
-1. Click on "senzing-poc" stack.
+1. Click on "senzing-basic" stack.
 1. Click on "Outputs" tab.
 1. Open the "0penFirst" value in a new web browser tab or window.
     1. Because this uses a self-signed certificate, a warning will come up in your browser.  Simply continue.
     1. In the "Sign in with your email and password" dialog box, enter the *UserName* and *UserInitPassword*
-       values seen in the "Output" tab of the "senzing-poc" stack.  This is a one-time password.
+       values seen in the "Output" tab of the "senzing-basic" stack.  This is a one-time password.
     1. In **Change Password**, enter a new password.
 
 ## Additional topics
 
 1. [How to load AWS Cloudformation queue](https://github.com/Senzing/knowledge-base/blob/master/HOWTO/load-aws-cloudformation-queue.md)
-1. [How to set AWS RDS force-scaling-capacity](https://github.com/Senzing/knowledge-base/blob/master/HOWTO/set-aws-rds-force-scaling-capacity.md)
 1. [How to migrate Senzing in AWS Cloudformation](https://github.com/Senzing/knowledge-base/blob/master/HOWTO/migrate-senzing-in-cloudformation.md)
 1. [How to update Senzing license](https://github.com/Senzing/knowledge-base/blob/master/HOWTO/update-senzing-license.md)
-1. [How to migrate an AWS RDS database](https://github.com/Senzing/knowledge-base/blob/master/HOWTO/migrate-aws-rds-database.md)
 
 ### Review AWS Cloudformation
 
@@ -250,17 +254,7 @@ Technical information on AWS Cloudformation parameters can be seen at
     1. A string in email format.
     1. Example: `me@example.com`
 
-### Route53HostedZoneId
-
-1. **Synopsis:**
-   An existing [AWS Route53 hosted zone](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/route-53-concepts.html#route-53-concepts-hosted-zone)
-   to use when creating a hostname having the format:
-   `{stack-name}.{hosted-zone-domain-name}`.
-   To see available Hosted Zones, visit the
-   [AWS Route53 Hosted Zone console](https://console.aws.amazon.com/route53/v2/hostedzones#).
-1. **Required:** No
-1. **Type:** HostedZoneId
-1. **Default:** If no hosted zone is selected, a self-signed certificate will be created to support HTTPS over the AWS Elastic Load Balancer.
+### DatabaseStack
 
 ### RunStreamProducer
 
@@ -346,6 +340,12 @@ Technical information on AWS Cloudformation parameters can be seen at
 
 1. **Default:** None
 
+### SenzingVersion
+
+1. **Synopsis:**
+   The version of Senzing installed onto the AWS Elastic File System.
+   More information at [Senzing API Version History](https://senzing.com/releases/#api-releases).
+
 ## Outputs
 
 ### 0penFirst
@@ -368,75 +368,6 @@ Technical information on AWS Cloudformation parameters can be seen at
    More information at
    [AWS LoadBalancer Console](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers).
    Select a load balancer, view the "Listeners" tab, then click "View/edit certificates".
-
-### DatabaseHostCore
-
-1. **Synopsis:**
-   One of 3 Senzing database servers that hold the Senzing Model.
-1. **Details:**
-   More information at [AWS RDS Console](https://console.aws.amazon.com/rds/home).
-
-### DatabaseHostLibfeat
-
-1. **Synopsis:**
-   Two of 3 Senzing database servers that hold the Senzing Model.
-1. **Details:**
-   More information at [AWS RDS Console](https://console.aws.amazon.com/rds/home)
-
-### DatabaseHostRes
-
-1. **Synopsis:**
-   Three of 3 Senzing database servers that hold the Senzing Model.
-1. **Details:**
-   More information at [AWS RDS Console](https://console.aws.amazon.com/rds/home)
-
-### DatabaseName
-
-1. **Synopsis:**
-   The name of the database.
-   It is same name across all 3 database servers.
-1. **Details:**
-   Usually "G2".
-
-### DatabasePassword
-
-1. **Synopsis:**
-   The randomly-generated administrative password for authenticating with the database.
-
-### DatabasePortCore
-
-1. **Synopsis:**
-   The port used to access the [DatabaseHostCore](#databasehostcore) database.
-1. **Details:**
-   More information at [AWS RDS Console](https://console.aws.amazon.com/rds/home).
-
-### DatabasePortLibfeat
-
-1. **Synopsis:**
-   The port used to access the [DatabaseHostLibfeat](#databasehostlibfeat) database.
-1. **Details:**
-   More information at [AWS RDS Console](https://console.aws.amazon.com/rds/home).
-
-### DatabasePortRes
-
-1. **Synopsis:**
-      The port used to access the [DatabaseHostRes](#databasehostres) database.
-1. **Details:**
-   More information at [AWS RDS Console](https://console.aws.amazon.com/rds/home).
-
-### DatabaseUsername
-
-1. **Synopsis:**
-   Username to access database in each of the three databases.
-1. **Details:**
-   More information at [AWS RDS Console](https://console.aws.amazon.com/rds/home).
-
-### Ec2Vpc
-
-1. **Synopsis:**
-   The AWS Resource ID of the Virtual Private Cloud (VPC).
-1. **Details:**
-   More information at [AWS VPC Console](https://console.aws.amazon.com/vpc/home?#vpcs:).
 
 ### Host
 
@@ -489,12 +420,6 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Details:**
    More information at [AWS SQS Console](https://console.aws.amazon.com/sqs/v2/home?#/queues).
 
-### SenzingVersion
-
-1. **Synopsis:**
-   The version of Senzing installed onto the AWS Elastic File System.
-   More information at [Senzing API Version History](https://senzing.com/releases/#api-releases).
-
 ### SshPassword
 
 1. **Synopsis:**
@@ -506,22 +431,6 @@ Technical information on AWS Cloudformation parameters can be seen at
    User ID to be used when logging into the SSHD container.
 1. **Details:**
    Usually "root".
-
-### SubnetPrivate1
-
-1. **Synopsis:**
-   The first of two private subnets created.
-1. **Details:**
-   See the subnet having a Name in the form `{StackName}-ec2-subnet-private-1` in the
-   [AWS Virtual Private Cloud console](https://console.aws.amazon.com/vpc/home?#subnets:).
-
-### SubnetPrivate2
-
-1. **Synopsis:**
-   The second of two private subnets created.
-1. **Details:**
-   See the subnet having a Name in the form `{StackName}-ec2-subnet-private-2` in the
-   [AWS Virtual Private Cloud console](https://console.aws.amazon.com/vpc/home?#subnets:).
 
 ### SubnetPublic1
 

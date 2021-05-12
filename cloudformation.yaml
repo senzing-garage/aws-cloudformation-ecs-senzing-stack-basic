@@ -29,6 +29,7 @@ Metadata:
           default: Senzing installation
         Parameters:
           - AcceptEula
+          - SenzingVersion
           - SenzingLicenseAsBase64
       -
         Label:
@@ -70,6 +71,8 @@ Metadata:
         default: >-
           Required if inserting more than 100K records.
           Senzing license as base64 encoded string.
+      SenzingVersion:
+        default: 'Required: Version of Senzing to install.'
 
 # -----------------------------------------------------------------------------
 # Parameters
@@ -96,17 +99,17 @@ Parameters:
     Type: String
 
 
-  DatabaseStack:
-    Default: '_'
-    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs/senzing-demo-full-stack/#databasestack'
-    Type: String
-
-
   CognitoAdminEmail:
     AllowedPattern: '.+|^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$'
     ConstraintDescription: Entering initial user email address is required to proceed
     Default: '_'
     Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#cognitoadminemail'
+    Type: String
+
+
+  DatabaseStack:
+    Default: '_'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs/senzing-demo-full-stack/#databasestack'
     Type: String
 
 
@@ -131,6 +134,15 @@ Parameters:
     ConstraintDescription: 'Must contain only Base64 characters. see https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzinglicenseasbase64'
     Default: ' '
     Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzinglicenseasbase64'
+    Type: String
+
+
+  SenzingVersion:
+    AllowedValues:
+      - '2.5.1'
+      - '2.5.0'
+    Default: '2.5.1'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzingversion'
     Type: String
 
 # -----------------------------------------------------------------------------
@@ -185,6 +197,12 @@ Rules:
 
 Mappings:
 
+  SenzingVersionMap:
+    "2.5.1":
+      value: "senzingapi-2.5.1-21124"
+    "2.5.0":
+      value: "senzingapi-2.5.0-21104"
+
   Constants:
     Run:
       ApiServer: Yes
@@ -196,8 +214,6 @@ Mappings:
       VpcFlowLogs: No
       WebApp: Yes
       Xterm: Yes
-    Senzing:
-      Version: senzingapi-2.5.0-21104
     Stack:
       Name: basic
     StreamProducer:
@@ -3459,7 +3475,10 @@ Resources:
           Command:
             - '-y'
             - 'install'
-            - !FindInMap [Constants, Senzing, Version]
+            - !FindInMap
+              - SenzingVersionMap
+              - !Ref SenzingVersion
+              - value
           Environment:
             -
               Name: SENZING_ACCEPT_EULA
@@ -4745,12 +4764,6 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}-sqs-redoer-output"
     Value: !Ref SqsRedoerOutput
-
-  SenzingVersion:
-    Description: 'The Senzing Engine version installed. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzingversion'
-    Export:
-      Name: !Sub "${AWS::StackName}-senzing-version"
-    Value: !FindInMap [Constants, Senzing, Version]
 
   SshPassword:
     Description: 'The randomly generated password for SSH access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#sshpassword'
