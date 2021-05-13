@@ -7,7 +7,7 @@ AWSTemplateFormatVersion: 2010-09-09
 #     aws cloudformation validate-template: https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudformation/validate-template.html
 
 Description: >-
-  Senzing aws-cloudformation-ecs-senzing-stack-basic: 1.0.0
+  Senzing aws-cloudformation-ecs-senzing-stack-basic: 1.0.1
   For more information see https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic
 
 # -----------------------------------------------------------------------------
@@ -968,6 +968,12 @@ Resources:
   LogsLogGroupLambdaGenerateCertificate:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-lambda-generate-certificate"
+    Type: AWS::Logs::LogGroup
+
+
+  LogsLogGroupLambdaRandomPassword:
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-lambda-random-password"
     Type: AWS::Logs::LogGroup
 
 
@@ -2017,7 +2023,7 @@ Resources:
       Runtime: python3.8
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-lambda-random-password"
+          Value: !Sub "${AWS::StackName}-lambda-subnets"
       Timeout: 600
     Type: AWS::Lambda::Function
 
@@ -2198,12 +2204,12 @@ Resources:
         platformVersion: 1.4.0
         tags:
           - key: Name
-            value: !Sub "${AWS::StackName}-lambda-runner-yum-run-task-parameters"
+            value: !Sub "${AWS::StackName}-lambda-runner-install-senzing-run-task-parameters"
         taskDefinition: !Ref EcsTaskDefinitionInstallSenzing
       ServiceToken: !GetAtt LambdaFunctionRunTaskAndWait.Arn
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-lambda-runner-yum"
+          Value: !Sub "${AWS::StackName}-lambda-runner-install-senzing"
     Type: Custom::LambdaRunnerInstallSenzing
 
 
@@ -2401,7 +2407,7 @@ Resources:
       ServiceToken: !GetAtt LambdaFunctionSubnets.Arn
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-lambda-runner-web-password"
+          Value: !Sub "${AWS::StackName}-lambda-runner-subnets"
       VpcId:
         Fn::ImportValue:
           !Sub "${DatabaseStack}-ec2-VpcId"
@@ -3656,6 +3662,9 @@ Resources:
             -
               Name: SENZING_SUBCOMMAND
               Value: read-from-sqs-withinfo
+            -
+              Name: SENZING_THREADS_PER_PROCESS
+              Value: '8'
           Essential: true
           Image: public.ecr.aws/senzing/redoer:1.3.5
           LogConfiguration:
@@ -3874,6 +3883,91 @@ Resources:
       ExecutionRoleArn: !GetAtt IamRoleSshd.Arn
       Family: !Sub "${AWS::StackName}-task-definition-sshd"
       Memory: '8192'
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ecs-task-definition-sshd"
+      Volumes:
+        -
+          Name: senzing-data-version-dir
+          EFSVolumeConfiguration:
+              AuthorizationConfig: {}
+              FilesystemId:
+                Ref: EfsFileSystem
+              RootDirectory: /data/2.0.0
+        -
+          Name: senzing-etc-dir
+          EFSVolumeConfiguration:
+              AuthorizationConfig: {}
+              FilesystemId:
+                Ref: EfsFileSystem
+              RootDirectory: /etc
+        -
+          Name: senzing-g2-dir
+          EFSVolumeConfiguration:
+              AuthorizationConfig: {}
+              FilesystemId:
+                Ref: EfsFileSystem
+              RootDirectory: /g2
+        -
+          Name: senzing-var-dir
+          EFSVolumeConfiguration:
+              AuthorizationConfig: {}
+              FilesystemId:
+                Ref: EfsFileSystem
+              RootDirectory: /var
+    Type: AWS::ECS::TaskDefinition
+
+
+  EcsTaskDefinitionSshdMax:
+    Properties:
+      ContainerDefinitions:
+        -
+          Environment:
+            -
+              Name: ROOT_PASSWORD
+              Value: !GetAtt LambdaRunnerSshPassword.RandomString
+            -
+              Name: SENZING_SKIP_DATABASE_PERFORMANCE_TEST
+              Value: 'true'
+          Essential: true
+          Image: public.ecr.aws/senzing/sshd:1.1.0
+          LinuxParameters:
+            Capabilities:
+              Add:
+                - SYS_PTRACE
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogsLogGroupMain
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: service
+          MountPoints:
+            -
+              SourceVolume: senzing-data-version-dir
+              ContainerPath: /opt/senzing/data
+              ReadOnly: false
+            -
+              SourceVolume: senzing-etc-dir
+              ContainerPath: /etc/opt/senzing
+              ReadOnly: false
+            -
+              SourceVolume: senzing-g2-dir
+              ContainerPath: /opt/senzing/g2
+              ReadOnly: false
+            -
+              SourceVolume: senzing-var-dir
+              ContainerPath: /var/opt/senzing
+              ReadOnly: false
+          Name: sshd
+          Privileged: false
+          ReadonlyRootFilesystem: false
+      Cpu: '4096'
+      ExecutionRoleArn: !GetAtt IamRoleSshd.Arn
+      Family: !Sub "${AWS::StackName}-task-definition-sshd"
+      Memory: '30720'
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
@@ -4670,7 +4764,7 @@ Resources:
           PredefinedMetricType: ECSServiceAverageCPUUtilization
         ScaleInCooldown: 1200
         ScaleOutCooldown: 300
-        TargetValue: 30
+        TargetValue: 5
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
 
 
