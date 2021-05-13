@@ -971,6 +971,12 @@ Resources:
     Type: AWS::Logs::LogGroup
 
 
+  LogsLogGroupLambdaRandomPassword:
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-lambda-random-password"
+    Type: AWS::Logs::LogGroup
+
+
   LogsLogGroupLambdaRandomString:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-lambda-random-string"
@@ -2017,7 +2023,7 @@ Resources:
       Runtime: python3.8
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-lambda-random-password"
+          Value: !Sub "${AWS::StackName}-lambda-subnets"
       Timeout: 600
     Type: AWS::Lambda::Function
 
@@ -2198,12 +2204,12 @@ Resources:
         platformVersion: 1.4.0
         tags:
           - key: Name
-            value: !Sub "${AWS::StackName}-lambda-runner-yum-run-task-parameters"
+            value: !Sub "${AWS::StackName}-lambda-runner-install-senzing-run-task-parameters"
         taskDefinition: !Ref EcsTaskDefinitionInstallSenzing
       ServiceToken: !GetAtt LambdaFunctionRunTaskAndWait.Arn
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-lambda-runner-yum"
+          Value: !Sub "${AWS::StackName}-lambda-runner-install-senzing"
     Type: Custom::LambdaRunnerInstallSenzing
 
 
@@ -2401,7 +2407,7 @@ Resources:
       ServiceToken: !GetAtt LambdaFunctionSubnets.Arn
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-lambda-runner-web-password"
+          Value: !Sub "${AWS::StackName}-lambda-runner-subnets"
       VpcId:
         Fn::ImportValue:
           !Sub "${DatabaseStack}-ec2-VpcId"
