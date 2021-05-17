@@ -213,6 +213,7 @@ Mappings:
       Jupyter: No
       Redoer: Yes
       Sshd: Yes
+      SshdMax: No
       StreamLoader: Yes
       Swagger: Yes
       VpcFlowLogs: No
@@ -248,6 +249,10 @@ Conditions:
 
   IfRunSshd: !Equals
     - !FindInMap [Constants, Run, Sshd]
+    - Yes
+
+  IfRunSshdMax: !Equals
+    - !FindInMap [Constants, Run, SshdMax]
     - Yes
 
   IfRunStreamLoader: !Equals
@@ -4661,6 +4666,37 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-ecs-service-sshd"
       TaskDefinition: !Ref EcsTaskDefinitionSshd
+    Type: AWS::ECS::Service
+
+
+  EcsServiceSshdMax:
+    Condition: IfRunSshdMax
+    DependsOn:
+     - LambdaRunnerInitSenzing
+    Properties:
+      Cluster: !Ref EcsCluster
+      DesiredCount: 1
+      EnableECSManagedTags: true
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref Ec2SecurityGroupSshd
+          Subnets:
+            - !Ref Ec2SubnetPublic1
+            - !Ref Ec2SubnetPublic2
+            - Fn::ImportValue:
+                Fn::Sub: '${DatabaseStack}-subnet-private-1'
+            - Fn::ImportValue:
+                Fn::Sub: '${DatabaseStack}-subnet-private-2'
+      PlatformVersion: 1.4.0
+      PropagateTags: TASK_DEFINITION
+      ServiceName: sshd-max
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ecs-service-sshd-max"
+      TaskDefinition: !Ref EcsTaskDefinitionSshdMax
     Type: AWS::ECS::Service
 
 
