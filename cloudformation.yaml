@@ -7,8 +7,9 @@ AWSTemplateFormatVersion: 2010-09-09
 #     aws cloudformation validate-template: https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudformation/validate-template.html
 
 Description: >-
-  Senzing aws-cloudformation-ecs-senzing-stack-basic: 1.0.1
-  For more information see https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic
+  Senzing aws-cloudformation-ecs-senzing-stack-basic: 1.0.2
+  For more information see
+  https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic
 
 # -----------------------------------------------------------------------------
 # Metadata
@@ -109,7 +110,7 @@ Parameters:
 
   DatabaseStack:
     Default: '_'
-    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs/senzing-demo-full-stack/#databasestack'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#databasestack'
     Type: String
 
 
@@ -139,9 +140,10 @@ Parameters:
 
   SenzingVersion:
     AllowedValues:
+      - '2.6.0'
       - '2.5.1'
       - '2.5.0'
-    Default: '2.5.1'
+    Default: '2.6.0'
     Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzingversion'
     Type: String
 
@@ -198,6 +200,8 @@ Rules:
 Mappings:
 
   SenzingVersionMap:
+    "2.6.0":
+      value: "senzingapi-2.6.0-21133"
     "2.5.1":
       value: "senzingapi-2.5.1-21124"
     "2.5.0":
@@ -269,6 +273,32 @@ Conditions:
   IfRunXterm: !Equals
     - !FindInMap [Constants, Run, Xterm]
     - Yes
+
+# -- Compound "if" conditions --------------------------------------------
+
+  IfUsingApiServer: !Or
+    - !Condition IfRunApiServer
+    - !Condition IfRunSwagger
+    - !Condition IfRunWebApp
+
+  IfUsingRedoQueues: !Or
+    - !Condition IfRunRedoer
+    - !Condition IfRunRedoer
+
+  IfUsingSshd: !Or
+    - !Condition IfRunSshd
+    - !Condition IfRunSshdMax
+
+  IfUsingQueues: !Or
+    - !Condition IfRunStreamLoader
+    - !Condition IfRunStreamProducer
+
+  IfUsingWeb: !Or
+    - !Condition IfRunApiServer
+    - !Condition IfRunJupyter
+    - !Condition IfRunSwagger
+    - !Condition IfRunWebApp
+    - !Condition IfRunXterm
 
 # -----------------------------------------------------------------------------
 # Resources
@@ -883,6 +913,7 @@ Resources:
 
 
   IamPolicySqsConsumer:
+    Condition: IfUsingQueues
     Properties:
       PolicyName: !Sub "${AWS::StackName}-iam-policy-sqs-consumer"
       PolicyDocument:
@@ -896,6 +927,26 @@ Resources:
               - !GetAtt SqsDeadLetter.Arn
               - !GetAtt SqsInput.Arn
               - !GetAtt SqsOutput.Arn
+        Version: '2012-10-17'
+      Roles:
+       - !Ref IamRoleRedoer
+       - !Ref IamRoleStreamLoader
+    Type: AWS::IAM::Policy
+
+
+  IamPolicySqsConsumerRedo:
+    Condition: IfUsingRedoQueues
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-iam-policy-sqs-consumer"
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - sqs:ReceiveMessage
+              - sqs:DeleteMessage
+            Effect: Allow
+            Resource:
+              - !GetAtt SqsRedoerDeadLetter.Arn
               - !GetAtt SqsRedoerInput.Arn
               - !GetAtt SqsRedoerOutput.Arn
         Version: '2012-10-17'
@@ -906,6 +957,7 @@ Resources:
 
 
   IamPolicySqsProducer:
+    Condition: IfUsingQueues
     Properties:
       PolicyName: !Sub "${AWS::StackName}-iam-policy-sqs-producer"
       PolicyDocument:
@@ -918,6 +970,26 @@ Resources:
               - !GetAtt SqsDeadLetter.Arn
               - !GetAtt SqsInput.Arn
               - !GetAtt SqsOutput.Arn
+        Version: '2012-10-17'
+      Roles:
+       - !Ref IamRoleRedoer
+       - !Ref IamRoleStreamLoader
+       - !Ref IamRoleStreamProducer
+    Type: AWS::IAM::Policy
+
+
+  IamPolicySqsProducerRedo:
+    Condition: IfUsingRedoQueues
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-iam-policy-sqs-producer"
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - sqs:SendMessage
+            Effect: Allow
+            Resource:
+              - !GetAtt SqsRedoerDeadLetter.Arn
               - !GetAtt SqsRedoerInput.Arn
               - !GetAtt SqsRedoerOutput.Arn
         Version: '2012-10-17'
@@ -960,12 +1032,14 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/cloudwatch/home?#logsV2:log-groups > Search for {stack}
 
   LogsLogGroupLambdaCognitoCreateUser:
+    Condition: IfUsingWeb
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-lambda-cognito-create-user"
     Type: AWS::Logs::LogGroup
 
 
   LogsLogGroupLambdaGenerateCertificate:
+    Condition: IfUsingWeb
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-lambda-generate-certificate"
     Type: AWS::Logs::LogGroup
@@ -1152,6 +1226,7 @@ Resources:
 
 
   Ec2SecurityGroupLoadBalancerPublic:
+    Condition: IfUsingWeb
     Properties:
       GroupDescription: !Sub "${AWS::StackName} - Public load balancer open ports."
       SecurityGroupEgress:
@@ -1169,6 +1244,7 @@ Resources:
 
 
   Ec2SecurityGroupSshd:
+    Condition: IfUsingSshd
     Properties:
       GroupDescription: !Sub "${AWS::StackName} - SSHD service open ports."
       SecurityGroupEgress:
@@ -1188,7 +1264,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/vpc/home?#SecurityGroups: > Search for {stack}-ec2-security-group-alb-public > Inbound rules
 
   Ec2SecurityGroupIngressApiServerPublic:
-    Condition: IfRunApiServer
+    Condition: IfUsingApiServer
     Properties:
       Description: Allow Health Check on Container 8250 from ALB
       FromPort: 8250
@@ -1200,6 +1276,7 @@ Resources:
 
 
   Ec2SecurityGroupIngressApiServerPrivate:
+    Condition: IfUsingApiServer
     Properties:
       CidrIp: !Ref CidrInbound
       Description: Senzing API server
@@ -1213,6 +1290,7 @@ Resources:
 
 
   Ec2SecurityGroupIngressHttps:
+    Condition: IfUsingWeb
     Properties:
       CidrIp: !Ref CidrInbound
       Description: HTTPS
@@ -1249,7 +1327,7 @@ Resources:
 
 
   Ec2SecurityGroupIngressSsh:
-    Condition: IfRunSshd
+    Condition: IfUsingSshd
     Properties:
       CidrIp: !Ref CidrInbound
       Description: SSH
@@ -1422,6 +1500,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/sqs/v2/home > Search on {stack}
 
   SqsInput:
+    Condition: IfUsingQueues
     Properties:
       DelaySeconds: 0
       KmsMasterKeyId: alias/aws/sqs
@@ -1443,6 +1522,7 @@ Resources:
 
 
   SqsDeadLetter:
+    Condition: IfUsingQueues
     Properties:
       DelaySeconds: 0
       KmsMasterKeyId: alias/aws/sqs
@@ -1458,6 +1538,7 @@ Resources:
 
 
   SqsOutput:
+    Condition: IfUsingQueues
     Properties:
       DelaySeconds: 0
       KmsMasterKeyId: alias/aws/sqs
@@ -1472,7 +1553,24 @@ Resources:
     Type: AWS::SQS::Queue
 
 
+  SqsRedoerDeadLetter:
+    Condition: IfUsingRedoQueues
+    Properties:
+      DelaySeconds: 0
+      KmsMasterKeyId: alias/aws/sqs
+      MaximumMessageSize: 262144
+      MessageRetentionPeriod: 1209600
+      QueueName: !Sub "${AWS::StackName}-sqs-redoer-dead-letter"
+      ReceiveMessageWaitTimeSeconds: 0
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-sqs-redoer-queue-dead"
+      VisibilityTimeout: 30
+    Type: AWS::SQS::Queue
+
+
   SqsRedoerInput:
+    Condition: IfUsingRedoQueues
     Properties:
       DelaySeconds: 0
       KmsMasterKeyId: alias/aws/sqs
@@ -1488,6 +1586,7 @@ Resources:
 
 
   SqsRedoerOutput:
+    Condition: IfUsingRedoQueues
     Properties:
       DelaySeconds: 0
       KmsMasterKeyId: alias/aws/sqs
@@ -1520,6 +1619,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/ec2/v2/home?#LoadBalancers: > {name} > "Listeners" tab > "View/edit certificates"
 
   IamServerCertificate:
+    Condition: IfUsingWeb
     Properties:
       CertificateBody: !GetAtt LambdaRunnerGenerateCertificate.CertificateBody
       PrivateKey: !GetAtt LambdaRunnerGenerateCertificate.PrivateKey
@@ -1535,6 +1635,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/lambda/home?#/functions > Search for {stack}
 
   LambdaFunctionCognitoCreateUser:
+    Condition: IfUsingWeb
     DependsOn:
      - IamPolicyRoute53
     Properties:
@@ -1602,6 +1703,7 @@ Resources:
 
 
   LambdaFunctionGenerateCertificate:
+    Condition: IfUsingWeb
     Properties:
       Code:
         # This code can be seen at https://github.com/Senzing/aws-lambda-self-signed-certificate
@@ -1620,6 +1722,7 @@ Resources:
 
 
   LambdaFunctionRandomPassword:
+    Condition: IfUsingWeb
     Properties:
       Code:
         ZipFile: |
@@ -1671,6 +1774,7 @@ Resources:
 
 
   LambdaFunctionRandomString:
+    Condition: IfUsingSshd
     DependsOn:
      - Ec2SubnetRouteTableAssociationPrivate1
      - Ec2SubnetRouteTableAssociationPrivate2
@@ -2092,6 +2196,7 @@ Resources:
 # AWS Console: FIXME:  none?
 
   LambdaRunnerCognitoCreateUser:
+    Condition: IfUsingWeb
     Properties:
       ClusterId: !Ref EcsCluster
       ServiceToken: !GetAtt LambdaFunctionCognitoCreateUser.Arn
@@ -2105,6 +2210,7 @@ Resources:
 
 
   LambdaRunnerG2ConfigTool:
+    Condition: IfRunStreamProducer
     DependsOn:
      - LambdaRunnerInitSenzing
     Properties:
@@ -2137,6 +2243,7 @@ Resources:
 
 
   LambdaRunnerGenerateCertificate:
+    Condition: IfUsingWeb
     Properties:
       CertificateAuthorityKeySize: 2048
       CertificateKeySize: 2048
@@ -2344,6 +2451,7 @@ Resources:
 
 
   LambdaRunnerSshPassword:
+    Condition: IfUsingSshd
     Properties:
       ClusterId: !Ref EcsCluster
       Length: 16
@@ -2439,6 +2547,7 @@ Resources:
 
 
   LambdaRunnerWebPassword:
+    Condition: IfUsingWeb
     Properties:
       ClusterId: !Ref EcsCluster
       Length: 16
@@ -2472,6 +2581,7 @@ Resources:
 
 
   LoadBalancerPublic:
+    Condition: IfUsingWeb
     DependsOn:
       IamServerCertificate
     Properties:
@@ -2492,7 +2602,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/ec2/v2/home?#TargetGroups: > Search for {stack}
 
   TargetGroupApiServerPrivate:
-    Condition: IfRunApiServer
+    Condition: IfUsingApiServer
     DependsOn:
      - LoadBalancerPrivate
     Properties:
@@ -2523,7 +2633,7 @@ Resources:
 
 
   TargetGroupApiServerPublic:
-    Condition: IfRunApiServer
+    Condition: IfUsingApiServer
     DependsOn:
      - LoadBalancerPublic
     Properties:
@@ -2692,7 +2802,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/ec2/v2/home?#LoadBalancers: > {name} > "Listeners" tab
 
   ListenerApiServerPrivate:
-    Condition: IfRunApiServer
+    Condition: IfUsingApiServer
     Properties:
       DefaultActions:
         - TargetGroupArn: !Ref TargetGroupApiServerPrivate
@@ -2704,6 +2814,7 @@ Resources:
 
 
   ListenerPort443:
+    Condition: IfUsingWeb
     Properties:
       Certificates:
         - CertificateArn: !GetAtt IamServerCertificate.Arn
@@ -2725,7 +2836,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/ec2/v2/home?#LoadBalancers: > {name} > "Listeners" tab > "View/edit rules"
 
   ListenerRuleApiServer:
-    Condition: IfRunApiServer
+    Condition: IfUsingApiServer
     Properties:
       Actions:
         - AuthenticateCognitoConfig:
@@ -2864,6 +2975,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/cognito/users/#/pool/u > Search for {stack}
 
   UserPool:
+    Condition: IfUsingWeb
     Properties:
       AdminCreateUserConfig:
         AllowAdminCreateUserOnly: true
@@ -2939,6 +3051,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/cognito/users/#/pool/u > Search for {stack} > "Domain name" tab
 
   UserPoolDomain: # Provides Cognito Login Page
+    Condition: IfUsingWeb
     Properties:
       Domain: !Sub "${AWS::StackName}"
       UserPoolId: !Ref UserPool
@@ -2950,6 +3063,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/cognito/users/#/pool/u > Search for {stack} > "App client settings" tab
 
   UserPoolClient:
+    Condition: IfUsingWeb
     Properties:
       AllowedOAuthFlows:
         - code # Required for ALB authentication
@@ -2970,6 +3084,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/ecs/home?#/taskDefinitions > Search for {stack}
 
   EcsTaskDefinitionApiServer:
+    Condition: IfUsingApiServer
     Properties:
       ContainerDefinitions:
         -
@@ -3074,6 +3189,7 @@ Resources:
 
 
   EcsTaskDefinitionG2ConfigTool:
+    Condition: IfRunStreamProducer
     Properties:
       ContainerDefinitions:
         -
@@ -3540,6 +3656,7 @@ Resources:
 
 
   EcsTaskDefinitionJupyter:
+    Condition: IfRunJupyter
     Properties:
       ContainerDefinitions:
         -
@@ -3628,6 +3745,7 @@ Resources:
 
 
   EcsTaskDefinitionRedoerLoader:
+    Condition: IfRunRedoer
     Properties:
       ContainerDefinitions:
         -
@@ -3652,7 +3770,7 @@ Resources:
               Value: '600'
             -
               Name: SENZING_SQS_FAILURE_QUEUE_URL
-              Value: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${SqsDeadLetter.QueueName}"
+              Value: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${SqsRedoerDeadLetter.QueueName}"
             -
               Name: SENZING_SQS_INFO_QUEUE_URL
               Value: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${SqsRedoerOutput.QueueName}"
@@ -3737,6 +3855,7 @@ Resources:
 
 
   EcsTaskDefinitionRedoerProducer:
+    Condition: IfRunRedoer
     Properties:
       ContainerDefinitions:
         -
@@ -3837,6 +3956,7 @@ Resources:
 
 
   EcsTaskDefinitionSshd:
+    Condition: IfRunSshd
     Properties:
       ContainerDefinitions:
         -
@@ -3922,6 +4042,7 @@ Resources:
 
 
   EcsTaskDefinitionSshdMax:
+    Condition: IfRunSshdMax
     Properties:
       ContainerDefinitions:
         -
@@ -4007,6 +4128,7 @@ Resources:
 
 
   EcsTaskDefinitionStreamLoader:
+    Condition: IfRunStreamLoader
     Properties:
       ContainerDefinitions:
         -
@@ -4119,6 +4241,7 @@ Resources:
 
 
   EcsTaskDefinitionStreamProducer:
+    Condition: IfRunStreamProducer
     Properties:
       ContainerDefinitions:
         -
@@ -4195,6 +4318,7 @@ Resources:
 
 
   EcsTaskDefinitionSwagger:
+    Condition: IfRunSwagger
     Properties:
       ContainerDefinitions:
         -
@@ -4235,6 +4359,7 @@ Resources:
 
 
   EcsTaskDefinitionWebApp:
+    Condition: IfRunWebApp
     Properties:
       ContainerDefinitions:
         -
@@ -4278,6 +4403,7 @@ Resources:
 
 
   EcsTaskDefinitionXterm:
+    Condition: IfRunXterm
     Properties:
       ContainerDefinitions:
         -
@@ -4371,7 +4497,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/ecs/home?#/clusters > {stack}-cluster > "Services" tab
 
   EcsServiceApiServer:
-    Condition: IfRunApiServer
+    Condition: IfUsingApiServer
     DependsOn:
      - LambdaRunnerInitSenzing
      - ListenerPort443
@@ -4679,6 +4805,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/ecs/home?#/clusters > {stack}-cluster > {Service Name} > "Auto Scaling" tab
 
   ApplicationAutoScalingScalableTargetApiServer:
+    Condition: IfUsingApiServer
     Properties:
       MaxCapacity: 200
       MinCapacity: 1
@@ -4694,6 +4821,7 @@ Resources:
 
 
   ApplicationAutoScalingScalableTargetRedoerLoader:
+    Condition: IfRunRedoer
     Properties:
       MaxCapacity: 200
       MinCapacity: 1
@@ -4709,6 +4837,7 @@ Resources:
 
 
   ApplicationAutoScalingScalableTargetStreamLoader:
+    Condition: IfRunStreamLoader
     Properties:
       MaxCapacity: 200
       MinCapacity: 1
@@ -4724,6 +4853,7 @@ Resources:
 
 
   ApplicationAutoScalingScalableTargetWebApp:
+    Condition: IfRunWebApp
     Properties:
       MaxCapacity: 200
       MinCapacity: 1
@@ -4741,6 +4871,7 @@ Resources:
 # AWS Console: https://console.aws.amazon.com/ecs/home?#/clusters > {stack}-cluster > {Service Name} > "Auto Scaling" tab
 
   ApplicationAutoScalingScalingPolicyApiServer:
+    Condition: IfUsingApiServer
     Properties:
       PolicyName: !Sub "${AWS::StackName}-scaling-policy-api-server"
       PolicyType: TargetTrackingScaling
@@ -4755,6 +4886,7 @@ Resources:
 
 
   ApplicationAutoScalingScalingPolicyRedoerLoader:
+    Condition: IfRunRedoer
     Properties:
       PolicyName: !Sub "${AWS::StackName}-scaling-policy-redoer-loader"
       PolicyType: TargetTrackingScaling
@@ -4769,6 +4901,7 @@ Resources:
 
 
   ApplicationAutoScalingScalingPolicyStreamLoader:
+    Condition: IfRunStreamLoader
     Properties:
       PolicyName: !Sub "${AWS::StackName}-scaling-policy-stream-loader"
       PolicyType: TargetTrackingScaling
@@ -4783,6 +4916,7 @@ Resources:
 
 
   ApplicationAutoScalingScalingPolicyWebApp:
+    Condition: IfRunWebApp
     Properties:
       PolicyName: !Sub "${AWS::StackName}-scaling-policy-web-app"
       PolicyType: TargetTrackingScaling
@@ -4818,54 +4952,70 @@ Outputs:
     Value: !Sub "${AWS::AccountId}"
 
   CertificateArn:
+    Condition: IfUsingWeb
     Description: 'ARN of the SSL certificate. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#certificatearn'
     Export:
       Name: !Sub "${AWS::StackName}-certificate-arn"
     Value: !GetAtt IamServerCertificate.Arn
 
   Host:
+    Condition: IfUsingWeb
     Description: 'Host name of public services. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#host'
     Export:
       Name: !Sub "${AWS::StackName}-host"
     Value: !GetAtt LoadBalancerPublic.DNSName
 
   QueueDeadLetter:
+    Condition: IfUsingQueues
     Description: 'URL of the dead-letter queue. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#queuedeadletter'
     Export:
       Name: !Sub "${AWS::StackName}-sqs-deadletter"
     Value: !Ref SqsDeadLetter
 
   QueueInput:
+    Condition: IfUsingQueues
     Description: 'URL of the queue of records to be ingested into Senzing. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#queueinput'
     Export:
       Name: !Sub "${AWS::StackName}-sqs-input"
     Value: !Ref SqsInput
 
   QueueOutput:
+    Condition: IfUsingQueues
     Description: 'URL of the queue with info records. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#queueoutput'
     Export:
       Name: !Sub "${AWS::StackName}-sqs-output"
     Value: !Ref SqsOutput
 
+  QueueRedoerDeadLetter:
+    Condition: IfUsingRedoQueues
+    Description: 'URL of the redoer dead-letter queue. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#queueredoerdeadletter'
+    Export:
+      Name: !Sub "${AWS::StackName}-sqs-redoer-deadletter"
+    Value: !Ref SqsRedoerDeadLetter
+
   QueueRedoerInput:
+    Condition: IfUsingRedoQueues
     Description: 'URL of the queue holding redo records to be processed. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#queueredoerinput'
     Export:
       Name: !Sub "${AWS::StackName}-sqs-redoer-input"
     Value: !Ref SqsRedoerInput
 
   QueueRedoerOutput:
+    Condition: IfUsingRedoQueues
     Description: 'URL of the queue with redoer info records. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#queueredoeroutput'
     Export:
       Name: !Sub "${AWS::StackName}-sqs-redoer-output"
     Value: !Ref SqsRedoerOutput
 
   SshPassword:
+    Condition: IfUsingSshd
     Description: 'The randomly generated password for SSH access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#sshpassword'
     Export:
       Name: !Sub "${AWS::StackName}-ssh-password"
     Value: !GetAtt LambdaRunnerSshPassword.RandomString
 
   SshUsername:
+    Condition: IfUsingSshd
     Description: 'The username for SSH access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#sshusername'
     Export:
       Name: !Sub "${AWS::StackName}-ssh-username"
@@ -4884,14 +5034,14 @@ Outputs:
     Value: !Ref Ec2SubnetPublic2
 
   UrlApiServer:
-    Condition: IfRunApiServer
+    Condition: IfUsingApiServer
     Description: "URL for API Server. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#urlapiserver"
     Export:
       Name: !Sub "${AWS::StackName}-url-api-server"
     Value: !Sub "https://${LoadBalancerPublic.DNSName}/api/"
 
   UrlApiServerHeartbeat:
-    Condition: IfRunApiServer
+    Condition: IfUsingApiServer
     Description: "URL for API Server's heartbeat. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#urlapiserverheartbeat"
     Value: !Sub "https://${LoadBalancerPublic.DNSName}/api/heartbeat/"
 
@@ -4924,18 +5074,21 @@ Outputs:
     Value: !Sub "https://${LoadBalancerPublic.DNSName}/xterm/"
 
   UserInitPassword:
+    Condition: IfUsingWeb
     Description: 'One time password for web access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#userinitpassword'
     Export:
       Name: !Sub "${AWS::StackName}-user-init-password"
     Value: !GetAtt LambdaRunnerWebPassword.RandomPassword
 
   UserName:
+    Condition: IfUsingWeb
     Description: 'Username for web access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#username'
     Export:
       Name: !Sub "${AWS::StackName}-user-name"
     Value: !Ref CognitoAdminEmail
 
   UserPool:
+    Condition: IfUsingWeb
     Description: 'Username for web access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#userpool'
     Export:
       Name: !Sub "${AWS::StackName}-user-pool"
