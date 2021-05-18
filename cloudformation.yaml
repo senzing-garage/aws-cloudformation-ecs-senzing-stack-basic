@@ -7,7 +7,7 @@ AWSTemplateFormatVersion: 2010-09-09
 #     aws cloudformation validate-template: https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudformation/validate-template.html
 
 Description: >-
-  Senzing aws-cloudformation-ecs-senzing-stack-basic: 1.0.2
+  Senzing aws-cloudformation-ecs-senzing-stack-basic: 1.0.3
   For more information see
   https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic
 
@@ -934,7 +934,6 @@ Resources:
               - !GetAtt SqsOutput.Arn
         Version: '2012-10-17'
       Roles:
-       - !Ref IamRoleRedoer
        - !Ref IamRoleStreamLoader
     Type: AWS::IAM::Policy
 
@@ -942,7 +941,7 @@ Resources:
   IamPolicySqsConsumerRedo:
     Condition: IfUsingRedoQueues
     Properties:
-      PolicyName: !Sub "${AWS::StackName}-iam-policy-sqs-consumer"
+      PolicyName: !Sub "${AWS::StackName}-iam-policy-sqs-consumer-redo"
       PolicyDocument:
         Statement:
           -
@@ -957,7 +956,6 @@ Resources:
         Version: '2012-10-17'
       Roles:
        - !Ref IamRoleRedoer
-       - !Ref IamRoleStreamLoader
     Type: AWS::IAM::Policy
 
 
@@ -977,7 +975,6 @@ Resources:
               - !GetAtt SqsOutput.Arn
         Version: '2012-10-17'
       Roles:
-       - !Ref IamRoleRedoer
        - !Ref IamRoleStreamLoader
        - !Ref IamRoleStreamProducer
     Type: AWS::IAM::Policy
@@ -986,7 +983,7 @@ Resources:
   IamPolicySqsProducerRedo:
     Condition: IfUsingRedoQueues
     Properties:
-      PolicyName: !Sub "${AWS::StackName}-iam-policy-sqs-producer"
+      PolicyName: !Sub "${AWS::StackName}-iam-policy-sqs-producer-redo"
       PolicyDocument:
         Statement:
           -
@@ -1000,8 +997,6 @@ Resources:
         Version: '2012-10-17'
       Roles:
        - !Ref IamRoleRedoer
-       - !Ref IamRoleStreamLoader
-       - !Ref IamRoleStreamProducer
     Type: AWS::IAM::Policy
 
 
