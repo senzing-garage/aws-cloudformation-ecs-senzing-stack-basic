@@ -4108,14 +4108,14 @@ Resources:
           ReadonlyRootFilesystem: false
       Cpu: '4096'
       ExecutionRoleArn: !GetAtt IamRoleSshd.Arn
-      Family: !Sub "${AWS::StackName}-task-definition-sshd"
+      Family: !Sub "${AWS::StackName}-task-definition-sshd-max"
       Memory: '30720'
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-ecs-task-definition-sshd"
+          Value: !Sub "${AWS::StackName}-ecs-task-definition-sshd-max"
       Volumes:
         -
           Name: senzing-data-version-dir
