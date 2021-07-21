@@ -3258,7 +3258,7 @@ Resources:
           Name: g2configtool
           Privileged: false
           ReadonlyRootFilesystem: false
-      Cpu: '1024'
+      Cpu: '2048'
       ExecutionRoleArn: !GetAtt IamRoleG2ConfigTool.Arn
       Family: !Sub "${AWS::StackName}-task-definition-g2configtool"
       Memory: '12288'
@@ -3739,7 +3739,7 @@ Resources:
               Protocol: tcp
           Privileged: false
           ReadonlyRootFilesystem: false
-      Cpu: '1024'
+      Cpu: '2048'
       ExecutionRoleArn: !GetAtt IamRoleJupyter.Arn
       Family: !Sub "${AWS::StackName}-task-definition-jupyter"
       Memory: '12288'
@@ -4040,7 +4040,7 @@ Resources:
           Name: sshd
           Privileged: false
           ReadonlyRootFilesystem: false
-      Cpu: '1024'
+      Cpu: '2048'
       ExecutionRoleArn: !GetAtt IamRoleSshd.Arn
       Family: !Sub "${AWS::StackName}-task-definition-sshd"
       Memory: '12288'
@@ -4238,7 +4238,7 @@ Resources:
           Name: stream-loader
           Privileged: false
           ReadonlyRootFilesystem: false
-      Cpu: '1024'
+      Cpu: '2048'
       ExecutionRoleArn: !GetAtt IamRoleStreamLoader.Arn
       Family: !Sub "${AWS::StackName}-task-definition-stream-loader"
       Memory: '12288'
@@ -4491,7 +4491,7 @@ Resources:
               Protocol: tcp
           Privileged: false
           ReadonlyRootFilesystem: false
-      Cpu: '1024'
+      Cpu: '2048'
       ExecutionRoleArn: !GetAtt IamRoleXterm.Arn
       Family: !Sub "${AWS::StackName}-task-definition-xterm"
       Memory: '12288'
