@@ -873,7 +873,19 @@ Resources:
               - iam:PassRole
             Effect: Allow
             Resource:
-              - '*'
+              - !Ref IamRoleFlowLog
+              - !Ref IamRoleG2ConfigTool
+              - !Ref IamRoleInitEfs
+              - !Ref IamRoleLambda
+              - !Ref IamRoleStreamProducer
+            Condition:
+              StringEquals:
+                "iam:PassedToService":
+                  - vpc-flow-logs.amazonaws.com
+                  - ecs-tasks.amazonaws.com
+                  - lambda.amazonaws.com
+                  - route53.amazonaws.com
+                  - sqs.amazonaws.com
         Version: '2012-10-17'
       Roles:
        - !Ref IamRoleFlowLog
