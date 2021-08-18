@@ -901,19 +901,14 @@ Resources:
               - iam:PassRole
             Effect: Allow
             Resource:
-              - !Ref IamRoleFlowLog
-              - !Ref IamRoleG2ConfigTool
-              - !Ref IamRoleInitEfs
-              - !Ref IamRoleLambda
-              - !Ref IamRoleStreamProducer
-            Condition:
-              StringEquals:
-                "iam:PassedToService":
-                  - vpc-flow-logs.amazonaws.com
-                  - ecs-tasks.amazonaws.com
-                  - lambda.amazonaws.com
-                  - route53.amazonaws.com
-                  - sqs.amazonaws.com
+              - !GetAtt IamRoleFlowLog.Arn
+              - !GetAtt IamRoleG2ConfigTool.Arn
+              - !GetAtt IamRoleInitEfs.Arn
+              - !GetAtt IamRoleLambda.Arn
+              - !GetAtt IamRoleStreamProducer.Arn
+              - !GetAtt IamRoleInstallSenzing.Arn
+              - !GetAtt IamRoleInitPostgres.Arn
+              - !GetAtt IamRoleInitSenzing.Arn
         Version: '2012-10-17'
       Roles:
        - !Ref IamRoleFlowLog
@@ -921,6 +916,9 @@ Resources:
        - !Ref IamRoleInitEfs
        - !Ref IamRoleLambda
        - !Ref IamRoleStreamProducer
+       - !Ref IamRoleInstallSenzing
+       - !Ref IamRoleInitPostgres
+       - !Ref IamRoleInitSenzing
     Type: AWS::IAM::Policy
 
 
@@ -943,21 +941,21 @@ Resources:
     Type: AWS::IAM::Policy
 
 
-  IamPolicyS3:
-    Properties:
-      PolicyName: !Sub "${AWS::StackName}-iam-policy-s3"
-      PolicyDocument:
-        Statement:
-          -
-            Action:
-              - s3:GetObject
-            Effect: Allow
-            Resource:
-              - '*'
-        Version: '2012-10-17'
-      Roles:
-       - !Ref IamRoleLambda
-    Type: AWS::IAM::Policy
+  # IamPolicyS3:
+  #   Properties:
+  #     PolicyName: !Sub "${AWS::StackName}-iam-policy-s3"
+  #     PolicyDocument:
+  #       Statement:
+  #         -
+  #           Action:
+  #             - s3:GetObject
+  #           Effect: Allow
+  #           Resource:
+  #             - '*'
+  #       Version: '2012-10-17'
+  #     Roles:
+  #      - !Ref IamRoleLambda
+  #   Type: AWS::IAM::Policy
 
 
   IamPolicySqsConsumer:
