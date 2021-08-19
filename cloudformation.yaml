@@ -224,6 +224,20 @@ Mappings:
       value: "senzingapi-2.5.0-21104"
 
   Constants:
+    Images:
+      ApiServer: public.ecr.aws/senzing/senzing-api-server:2.7.1
+      BusyBox: public.ecr.aws/senzing/busybox
+      G2Config: public.ecr.aws/senzing/g2configtool:1.4.3
+      InitContainer: public.ecr.aws/senzing/init-container:1.6.13
+      Jupyter: public.ecr.aws/senzing/jupyter:1.3.0
+      Redoer: public.ecr.aws/senzing/redoer-with-data:1.3.10
+      Sshd: public.ecr.aws/senzing/sshd:1.2.4
+      StreamLoader: public.ecr.aws/senzing/stream-loader-with-data:1.8.4
+      StreamProducer: public.ecr.aws/senzing/stream-producer:1.5.1
+      Swagger: public.ecr.aws/senzing/swagger-ui:v3.50.0
+      WebApp: public.ecr.aws/senzing/entity-search-web-app:2.3.0
+      Xterm: public.ecr.aws/senzing/xterm:1.1.3
+      Yum: public.ecr.aws/senzing/yum:1.1.6
     Run:
       ApiServer: Yes
       Jupyter: No
@@ -987,6 +1001,7 @@ Resources:
           -
             Action:
               - sqs:SendMessage
+              - sqs:GetQueueAttributes
             Effect: Allow
             Resource:
               - !GetAtt SqsDeadLetter.Arn
@@ -1008,6 +1023,7 @@ Resources:
           -
             Action:
               - sqs:SendMessage
+              - sqs:GetQueueAttributes
             Effect: Allow
             Resource:
               - !GetAtt SqsRedoerDeadLetter.Arn
@@ -3072,7 +3088,7 @@ Resources:
               Name: SENZING_API_SERVER_URL_BASE_PATH
               Value: /api
           Essential: true
-          Image: public.ecr.aws/senzing/senzing-api-server:2.6.1
+          Image: !FindInMap [Constants, Images, ApiServer]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -3155,7 +3171,7 @@ Resources:
             - -f
             - /etc/opt/senzing/G2Config.gtc
           Essential: true
-          Image: public.ecr.aws/senzing/g2configtool:1.4.2
+          Image: !FindInMap [Constants, Images, G2Config]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -3240,7 +3256,7 @@ Resources:
             - '-p'
             - '/efs/var/shared'
           Essential: true
-          Image: public.ecr.aws/senzing/busybox
+          Image: !FindInMap [Constants, Images, BusyBox]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -3297,7 +3313,7 @@ Resources:
               Name: SENZING_LICENSE_BASE64_ENCODED
               Value: !Sub "${SenzingLicenseAsBase64}"
           Essential: true
-          Image: public.ecr.aws/senzing/init-container:1.6.12
+          Image: !FindInMap [Constants, Images, InitContainer]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -3372,7 +3388,7 @@ Resources:
               Name: SENZING_ACCEPT_EULA
               Value: !Ref AcceptEula
           Essential: true
-          Image: public.ecr.aws/senzing/yum:1.1.4
+          Image: !FindInMap [Constants, Images, Yum]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -3436,7 +3452,7 @@ Resources:
               Name: SENZING_ENGINE_CONFIGURATION_JSON
               Value: !GetAtt SsmParameterSenzingEngineConfigurationJson.Value
           Essential: true
-          Image: public.ecr.aws/senzing/jupyter:1.3.0
+          Image: !FindInMap [Constants, Images, Jupyter]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -3550,7 +3566,7 @@ Resources:
               Name: SENZING_THREADS_PER_PROCESS
               Value: '8'
           Essential: true
-          Image: public.ecr.aws/senzing/redoer:1.3.7
+          Image: !FindInMap [Constants, Images, Redoer]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -3558,10 +3574,6 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: service
           MountPoints:
-            -
-              SourceVolume: senzing-data-version-dir
-              ContainerPath: /opt/senzing/data
-              ReadOnly: true
             -
               SourceVolume: senzing-etc-dir
               ContainerPath: /etc/opt/senzing
@@ -3589,13 +3601,6 @@ Resources:
           Value: !Sub "${AWS::StackName}-ecs-task-definition-redoer-loader"
       TaskRoleArn: !GetAtt IamRoleRedoer.Arn
       Volumes:
-        -
-          Name: senzing-data-version-dir
-          EFSVolumeConfiguration:
-              AuthorizationConfig: {}
-              FilesystemId:
-                Ref: EfsFileSystem
-              RootDirectory: /data/2.0.0
         -
           Name: senzing-etc-dir
           EFSVolumeConfiguration:
@@ -3654,7 +3659,7 @@ Resources:
               Name: SENZING_THREADS_PER_PROCESS
               Value: '12'
           Essential: true
-          Image: public.ecr.aws/senzing/redoer:1.3.7
+          Image: !FindInMap [Constants, Images, Redoer]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -3662,10 +3667,6 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: service
           MountPoints:
-            -
-              SourceVolume: senzing-data-version-dir
-              ContainerPath: /opt/senzing/data
-              ReadOnly: true
             -
               SourceVolume: senzing-etc-dir
               ContainerPath: /etc/opt/senzing
@@ -3693,13 +3694,6 @@ Resources:
           Value: !Sub "${AWS::StackName}-ecs-task-definition-redoer-producer"
       TaskRoleArn: !GetAtt IamRoleRedoer.Arn
       Volumes:
-        -
-          Name: senzing-data-version-dir
-          EFSVolumeConfiguration:
-              AuthorizationConfig: {}
-              FilesystemId:
-                Ref: EfsFileSystem
-              RootDirectory: /data/2.0.0
         -
           Name: senzing-etc-dir
           EFSVolumeConfiguration:
@@ -3737,7 +3731,7 @@ Resources:
               Name: SENZING_SKIP_DATABASE_PERFORMANCE_TEST
               Value: 'true'
           Essential: true
-          Image: public.ecr.aws/senzing/sshd:1.2.0
+          Image: !FindInMap [Constants, Images, Sshd]
           LinuxParameters:
             Capabilities:
               Add:
@@ -3823,7 +3817,7 @@ Resources:
               Name: SENZING_SKIP_DATABASE_PERFORMANCE_TEST
               Value: 'true'
           Essential: true
-          Image: public.ecr.aws/senzing/sshd:1.2.0
+          Image: !FindInMap [Constants, Images, Sshd]
           LinuxParameters:
             Capabilities:
               Add:
@@ -3939,7 +3933,7 @@ Resources:
               Name: SENZING_THREADS_PER_PROCESS
               Value: '8'
           Essential: true
-          Image: public.ecr.aws/senzing/stream-loader:1.7.6
+          Image: !FindInMap [Constants, Images, StreamLoader]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -3947,10 +3941,6 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: service
           MountPoints:
-            -
-              SourceVolume: senzing-data-version-dir
-              ContainerPath: /opt/senzing/data
-              ReadOnly: true
             -
               SourceVolume: senzing-etc-dir
               ContainerPath: /etc/opt/senzing
@@ -3978,13 +3968,6 @@ Resources:
           Value: !Sub "${AWS::StackName}-ecs-task-definition-stream-loader"
       TaskRoleArn: !GetAtt IamRoleStreamLoader.Arn
       Volumes:
-        -
-          Name: senzing-data-version-dir
-          EFSVolumeConfiguration:
-              AuthorizationConfig: {}
-              FilesystemId:
-                Ref: EfsFileSystem
-              RootDirectory: /data/2.0.0
         -
           Name: senzing-etc-dir
           EFSVolumeConfiguration:
@@ -4049,7 +4032,7 @@ Resources:
               Name: SENZING_THREADS_PER_PRINT
               Value: '30'
           Essential: true
-          Image: public.ecr.aws/senzing/stream-producer:1.4.0
+          Image: !FindInMap [Constants, Images, StreamProducer]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -4099,7 +4082,7 @@ Resources:
               Name: URL
               Value: "https://raw.githubusercontent.com/Senzing/senzing-rest-api-specification/master/senzing-rest-api.yaml"
           Essential: true
-          Image: public.ecr.aws/senzing/swagger-ui:v3.50.0
+          Image: !FindInMap [Constants, Images, Swagger]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -4143,7 +4126,7 @@ Resources:
               Name: SENZING_WEB_SERVER_VIRTUAL_PATH
               Value: /app
           Essential: true
-          Image: public.ecr.aws/senzing/entity-search-web-app:2.2.3
+          Image: !FindInMap [Constants, Images, WebApp]
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -4184,7 +4167,7 @@ Resources:
               Name: SENZING_SKIP_DATABASE_PERFORMANCE_TEST
               Value: 'true'
           Essential: true
-          Image: public.ecr.aws/senzing/xterm:1.1.0
+          Image: !FindInMap [Constants, Images, Xterm]
           LinuxParameters:
             Capabilities:
               Add:
