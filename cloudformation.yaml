@@ -55,7 +55,7 @@ Metadata:
           https://senzing.com/end-user-license-agreement,
           enter 'I_ACCEPT_THE_SENZING_EULA'.
       CidrInbound:
-        default: 'Optional: Allowed inbound connections using CIDR notation.'
+        default: 'Required: Allowed inbound connections using CIDR notation.'
       DatabaseStack:
         default: 'Required: Name of stack having Senzing databases.'
       CognitoAdminEmail:
@@ -95,7 +95,9 @@ Parameters:
   CidrInbound:
     AllowedPattern: '(?:\d{1,3}\.){3}\d{1,3}(?:/\d\d?)?'
     ConstraintDescription: Inbound CIDR must be in the format n.n.n.n/n
-    Default: 0.0.0.0/0
+    MinLength: 9
+    MaxLength: 18
+    Default: '10.0.0.0/32'
     Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#cidrinbound'
     Type: String
 
@@ -140,11 +142,12 @@ Parameters:
 
   SenzingVersion:
     AllowedValues:
+      - '2.8.1'
       - '2.7.0'
       - '2.6.0'
       - '2.5.1'
       - '2.5.0'
-    Default: '2.7.0'
+    Default: '2.8.1'
     Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzingversion'
     Type: String
 
@@ -154,6 +157,15 @@ Parameters:
 # -----------------------------------------------------------------------------
 
 Rules:
+
+  ConfirmCidrInbound:
+    Assertions:
+      - Assert: !Not
+          - !Equals
+            - !Ref CidrInbound
+            - '10.0.0.0/32'
+        AssertDescription: 'Entering initial user email address is required to proceed'
+
 
   ConfirmCognitoAdminEmail:
     Assertions:
@@ -200,6 +212,8 @@ Rules:
 
 Mappings:
   SenzingVersionMap:
+    "2.8.1":
+      value: "senzingapi-2.8.1-21217"
     "2.7.0":
       value: "senzingapi-2.7.0-21153"
     "2.6.0":
@@ -1283,7 +1297,9 @@ Resources:
   Ec2SecurityGroupIngressApiServerPrivate:
     Condition: IfUsingApiServer
     Properties:
-      CidrIp: !Ref CidrInbound
+      CidrIp:
+        Fn::ImportValue:
+          Fn::Sub: '${DatabaseStack}-ec2-VpcId-cidrblock'
       Description: Senzing API server
       FromPort: 8250
       GroupId:
@@ -1320,7 +1336,9 @@ Resources:
 
   Ec2SecurityGroupIngressNFS:
     Properties:
-      CidrIp: !Ref CidrInbound
+      CidrIp:
+        Fn::ImportValue:
+          Fn::Sub: '${DatabaseStack}-ec2-VpcId-cidrblock'
       Description: NFS
       FromPort: 2049
       IpProtocol: tcp
