@@ -3550,7 +3550,7 @@ Resources:
               Name: SENZING_THREADS_PER_PROCESS
               Value: '8'
           Essential: true
-          Image: public.ecr.aws/senzing/redoer:1.3.7
+          Image: public.ecr.aws/senzing/redoer-with-data:1.3.10
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -3558,10 +3558,6 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: service
           MountPoints:
-            -
-              SourceVolume: senzing-data-version-dir
-              ContainerPath: /opt/senzing/data
-              ReadOnly: true
             -
               SourceVolume: senzing-etc-dir
               ContainerPath: /etc/opt/senzing
@@ -3589,13 +3585,6 @@ Resources:
           Value: !Sub "${AWS::StackName}-ecs-task-definition-redoer-loader"
       TaskRoleArn: !GetAtt IamRoleRedoer.Arn
       Volumes:
-        -
-          Name: senzing-data-version-dir
-          EFSVolumeConfiguration:
-              AuthorizationConfig: {}
-              FilesystemId:
-                Ref: EfsFileSystem
-              RootDirectory: /data/2.0.0
         -
           Name: senzing-etc-dir
           EFSVolumeConfiguration:
@@ -3939,7 +3928,7 @@ Resources:
               Name: SENZING_THREADS_PER_PROCESS
               Value: '8'
           Essential: true
-          Image: public.ecr.aws/senzing/stream-loader:1.7.6
+          Image: public.ecr.aws/senzing/stream-with-data:1.8.4
           LogConfiguration:
             LogDriver: awslogs
             Options:
@@ -3947,10 +3936,6 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: service
           MountPoints:
-            -
-              SourceVolume: senzing-data-version-dir
-              ContainerPath: /opt/senzing/data
-              ReadOnly: true
             -
               SourceVolume: senzing-etc-dir
               ContainerPath: /etc/opt/senzing
@@ -3978,13 +3963,6 @@ Resources:
           Value: !Sub "${AWS::StackName}-ecs-task-definition-stream-loader"
       TaskRoleArn: !GetAtt IamRoleStreamLoader.Arn
       Volumes:
-        -
-          Name: senzing-data-version-dir
-          EFSVolumeConfiguration:
-              AuthorizationConfig: {}
-              FilesystemId:
-                Ref: EfsFileSystem
-              RootDirectory: /data/2.0.0
         -
           Name: senzing-etc-dir
           EFSVolumeConfiguration:
