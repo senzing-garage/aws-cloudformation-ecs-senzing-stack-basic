@@ -1001,6 +1001,7 @@ Resources:
           -
             Action:
               - sqs:SendMessage
+              - sqs:GetQueueAttributes
             Effect: Allow
             Resource:
               - !GetAtt SqsDeadLetter.Arn
@@ -1022,6 +1023,7 @@ Resources:
           -
             Action:
               - sqs:SendMessage
+              - sqs:GetQueueAttributes
             Effect: Allow
             Resource:
               - !GetAtt SqsRedoerDeadLetter.Arn
