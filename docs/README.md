@@ -400,6 +400,8 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Details:**
    More information at [AWS SQS Console](https://console.aws.amazon.com/sqs/v2/home?#/queues).
 
+### QueueRedoerDeadLetter
+
 ### QueueRedoerInput
 
 1. **Synopsis:**
