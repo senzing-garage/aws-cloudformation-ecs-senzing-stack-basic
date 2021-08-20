@@ -2,7 +2,9 @@
 
 ## Synopsis
 
-`aws-cloudformation-ecs-senzing-stack-basic` deploys Senzing using an AWS Cloudformation template.
+The
+[aws-cloudformation-ecs-senzing-stack-basic](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic)
+cloudformation template deploys Senzing using an AWS Cloudformation template.
 Before deploying this Cloudformation template,
 [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
 must be deployed.
@@ -13,11 +15,13 @@ The `aws-cloudformation-ecs-senzing-stack-basic` demonstration is an AWS Cloudfo
 
 1. AWS infrastructure
     1. Elastic IP address
-    1. NAT Gateway
-    1. Subnets
-    1. Routes
-    1. IAM Roles and Policies
+    1. IAM Roles, Policies, and Certificates
+    1. Loadbalancers
     1. Logging
+    1. NAT Gateway
+    1. Routes
+    1. Security Groups
+    1. Subnets
 1. AWS services
     1. AWS Cognito
     1. AWS Elastic Container Service (ECS) Fargate
@@ -109,10 +113,16 @@ describing where we can improve.   Now on with the show...
             1. Accept the End User License Agreement
         1. In **Security**
             1. Enter your email address.  Example: `me@example.com`
+            1. Enter a
+               [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+               that allows access from certain IP Addresses.
+               For instance `0.0.0.0/0` allows access from anywhere,
+               but is considered insecure.
+               `1.2.3.4/32` allows access from only one IP address, `1.2.3.4`.
         1. In **Identify existing resources**
             1. Enter the stack name of the previously deployed
                [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
-               Cloudformation stack
+               Cloudformation stack.
                Example:  `senzing-db`
     1. Other parameters are optional.
        The default values are fine.
