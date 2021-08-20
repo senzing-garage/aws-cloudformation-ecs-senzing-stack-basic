@@ -245,7 +245,7 @@ Mappings:
       Sshd: Yes
       SshdMax: No
       StreamLoader: Yes
-      Swagger: Yes
+      Swagger: No
       VpcFlowLogs: No
       WebApp: Yes
       Xterm: Yes
