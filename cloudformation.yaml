@@ -738,6 +738,7 @@ Resources:
 
 
   IamPolicyCertificates:
+    Condition: IfUsingWeb
     Properties:
       PolicyName: !Sub "${AWS::StackName}-iam-policy-certificates"
       PolicyDocument:
@@ -747,7 +748,7 @@ Resources:
               - iam:UploadServerCertificate
             Effect: Allow
             Resource:
-              - '*'
+              - !GetAtt IamServerCertificate.Arn
         Version: '2012-10-17'
       Roles:
        - !Ref IamRoleLambda
@@ -756,6 +757,7 @@ Resources:
 
 
   IamPolicyCognito:
+    Condition: IfUsingWeb
     Properties:
       PolicyName: !Sub "${AWS::StackName}-iam-policy-cognito"
       PolicyDocument:
@@ -845,7 +847,6 @@ Resources:
         Version: '2012-10-17'
       Roles:
        - !Ref IamRoleApiServer
-       - !Ref IamRoleFlowLog
        - !Ref IamRoleG2ConfigTool
        - !Ref IamRoleInitEfs
        - !Ref IamRoleInitPostgres
@@ -864,6 +865,7 @@ Resources:
 
 
   IamPolicyPassRole:
+    Condition: IfUsingWeb
     Properties:
       PolicyName: !Sub "${AWS::StackName}-iam-policy-pass-role"
       PolicyDocument:
@@ -1640,8 +1642,6 @@ Resources:
 
   LambdaFunctionCognitoCreateUser:
     Condition: IfUsingWeb
-    DependsOn:
-     - IamPolicyRoute53
     Properties:
       Code:
         ZipFile: |
