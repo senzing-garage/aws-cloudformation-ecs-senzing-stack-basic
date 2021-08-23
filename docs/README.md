@@ -2,7 +2,9 @@
 
 ## Synopsis
 
-`aws-cloudformation-ecs-senzing-stack-basic` deploys Senzing using an AWS Cloudformation template.
+The
+[aws-cloudformation-ecs-senzing-stack-basic](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic)
+cloudformation template deploys Senzing using an AWS Cloudformation template.
 Before deploying this Cloudformation template,
 [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
 must be deployed.
@@ -13,11 +15,13 @@ The `aws-cloudformation-ecs-senzing-stack-basic` demonstration is an AWS Cloudfo
 
 1. AWS infrastructure
     1. Elastic IP address
-    1. NAT Gateway
-    1. Subnets
-    1. Routes
-    1. IAM Roles and Policies
+    1. IAM Roles, Policies, and Certificates
+    1. Loadbalancers
     1. Logging
+    1. NAT Gateway
+    1. Routes
+    1. Security Groups
+    1. Subnets
 1. AWS services
     1. AWS Cognito
     1. AWS Elastic Container Service (ECS) Fargate
@@ -109,10 +113,16 @@ describing where we can improve.   Now on with the show...
             1. Accept the End User License Agreement
         1. In **Security**
             1. Enter your email address.  Example: `me@example.com`
+            1. Enter a
+               [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+               that allows access from certain IP Addresses.
+               For instance `0.0.0.0/0` allows access from anywhere,
+               but is considered insecure.
+               `1.2.3.4/32` allows access from only one IP address, `1.2.3.4`.
         1. In **Identify existing resources**
             1. Enter the stack name of the previously deployed
                [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
-               Cloudformation stack
+               Cloudformation stack.
                Example:  `senzing-db`
     1. Other parameters are optional.
        The default values are fine.
@@ -198,8 +208,7 @@ template can be see in the [AWS Management Console](https://console.aws.amazon.c
 1. Visit [AWS Cloudformation console](https://console.aws.amazon.com/cloudformation/home).
 1. Choose appropriate "Stack name"
 1. Choose "Outputs" tab.
-    1. For descriptions of outputs, click on the value for `ADescriptionOfOutputs`,
-       which links to [Outputs](#outputs) further down this page.
+    1. For descriptions of outputs, visit [Outputs](#outputs) further down this page.
 
 ## Parameters
 
@@ -218,10 +227,13 @@ Technical information on AWS Cloudformation parameters can be seen at
 
 ### CidrInbound
 
-1. **Synopsis:** A Classless Inter-Domain Routing (CIDR) value used to limit access to the system.
+1. **Synopsis:** A Classless Inter-Domain Routing
+   ([CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing))
+   value used to limit access to the system.
    This restricts the inbound traffic to requests from specified IP ranges.
    Examples:
     1. A system with the value `0.0.0.0/0` allows access from anywhere.
+       Because of its "wide-open" nature, it is considered to be insecure.
     1. A system with the value `45.26.129.0/24` will allow access from IP addresses in the range `45.26.129.0` to `45.26.129.255`
     1. A system with the value `45.26.129.200/32` will allow access from a single IP address `45.26.129.200`.
 1. **Required:** Yes
@@ -229,7 +241,7 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Allowed pattern:** Letters and numbers. Specifically: `'(?:\d{1,3}\.){3}\d{1,3}(?:/\d\d?)?'`
 1. **Allowed values:** String in IPv4 [CIDR format](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing).
 1. **Example:** 45.26.129.200/32
-1. **Default:** 0.0.0.0/0
+1. **Default:** None
 
 ### CognitoAdminEmail
 
@@ -241,9 +253,21 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Type:** String
 1. **Allowed values:**
     1. A string in email format.
-    1. Example: `me@example.com`
+1. **Example:** `me@example.com`
+1. **Default:** None
 
 ### DatabaseStack
+
+1. **Synopsis:**
+   The name of the cloudformation stack deployed with the
+   [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
+   cloudformation template.
+   The DatabaseStack exported output values are used by the
+   [aws-cloudformation-ecs-senzing-stack-basic](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic).
+1. **Required:** Yes
+1. **Type:** String
+1. **Example:** `senzing-db`
+1. **Default:** None
 
 ### RunStreamProducer
 
@@ -334,6 +358,9 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Synopsis:**
    The version of Senzing installed onto the AWS Elastic File System.
    More information at [Senzing API Version History](https://senzing.com/releases/#api-releases).
+1. **Required:** Yes
+1. **Type:** Choice
+1. **Default:** Latest version in the list.
 
 ## Outputs
 
@@ -343,17 +370,22 @@ Technical information on AWS Cloudformation parameters can be seen at
    An alias for [UrlWebApp](#urlwebapp).
    Since it's one of the first things to look at, it is listed first.
 1. **Details:**
-   It is listed first because the name "cheats" and uses a zero instead of a capital "o".
+   It is listed first in alphabetical order because the name "cheats" and uses a zero instead of a capital "o".
 
 ### AccountID
 
 1. **Synopsis:**
-   The AWS account ID used to create the AWS Cloudformation.
+   The identifier of the AWS account used to create the cloudformation stack.
+1. **Details:**
+   This information will match the
+   [AWS Management Console](https://console.aws.amazon.com/console/home)
+   user dropdown "My Account" value.
 
 ### CertificateArn
 
 1. **Synopsis:**
    Amazon Resource Name (ARN) of certificate used for SSL support.
+1. **Details:**
    More information at
    [AWS LoadBalancer Console](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers).
    Select a load balancer, view the "Listeners" tab, then click "View/edit certificates".
@@ -370,7 +402,7 @@ Technical information on AWS Cloudformation parameters can be seen at
 
 1. **Synopsis:**
    The queue to which records that are not able to be ingested into Senzing Engine are sent.
-   In otherwords, if the JSON message is malformed, or Senzing denied inserting into the Senzing Engine.
+   In otherwords, if the JSON message is malformed or Senzing denied inserting into the Senzing Engine.
 1. **Details:**
    More information at [AWS SQS Console](https://console.aws.amazon.com/sqs/v2/home?#/queues).
 
@@ -387,6 +419,14 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Synopsis:**
    The queue that is populated with responses from inserting records into the Senzing Engine.
    This is commonly called "WithInfo" information.
+1. **Details:**
+   More information at [AWS SQS Console](https://console.aws.amazon.com/sqs/v2/home?#/queues).
+
+### QueueRedoerDeadLetter
+
+1. **Synopsis:**
+   The queue to which redo records that are not able to be redone by the Senzing Engine are sent.
+   In otherwords, if the message is malformed or Senzing denied redoing the message.
 1. **Details:**
    More information at [AWS SQS Console](https://console.aws.amazon.com/sqs/v2/home?#/queues).
 
@@ -412,7 +452,7 @@ Technical information on AWS Cloudformation parameters can be seen at
 ### SshPassword
 
 1. **Synopsis:**
-   Password to be used when logging into the SSHD container.
+   The [SshUsername](#sshusername)'s password to be used when logging into the SSHD container.
 
 ### SshUsername
 
@@ -420,6 +460,7 @@ Technical information on AWS Cloudformation parameters can be seen at
    User ID to be used when logging into the SSHD container.
 1. **Details:**
    Usually "root".
+   Logging in also requires the [SshPassword](#sshpassword) value.
 
 ### SubnetPublic1
 
@@ -448,9 +489,10 @@ Technical information on AWS Cloudformation parameters can be seen at
 
 1. **Synopsis:**
    A URL showing how to reach the
-   [Senzing API Server](https://github.com/Senzing/senzing-api-server)
-   directly.
-   The `/heartbeat` URI path simply demonstrates that the API server is responding.
+   [Senzing API Server](https://github.com/Senzing/senzing-api-server)'s
+   `/heartbeat` URI path.
+   This demonstrates that the API server is responding.
+1. **Details:**
    For more URIs, see
    [SwaggerUrl output value](#urlswagger).
 
@@ -465,6 +507,10 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Synopsis:**
    A URL showing how to reach the
    [Swagger User Interface](https://github.com/swagger-api/swagger-ui).
+   By default, SwaggerUI is not enabled in the Cloudformation template.
+   To enable, in the Cloudformation template set `Mappings.Constants.Run.Swagger` to "Yes"
+   before deploying.
+
 1. **Usage:**
    To access the Senzing API server
     1. Using the URL, visit the `UrlSwagger` webpage.
