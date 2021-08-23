@@ -232,6 +232,7 @@ Technical information on AWS Cloudformation parameters can be seen at
    This restricts the inbound traffic to requests from specified IP ranges.
    Examples:
     1. A system with the value `0.0.0.0/0` allows access from anywhere.
+       Because of its "wide-open" nature, it is considered to be insecure.
     1. A system with the value `45.26.129.0/24` will allow access from IP addresses in the range `45.26.129.0` to `45.26.129.255`
     1. A system with the value `45.26.129.200/32` will allow access from a single IP address `45.26.129.200`.
 1. **Required:** Yes
@@ -239,7 +240,7 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Allowed pattern:** Letters and numbers. Specifically: `'(?:\d{1,3}\.){3}\d{1,3}(?:/\d\d?)?'`
 1. **Allowed values:** String in IPv4 [CIDR format](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing).
 1. **Example:** 45.26.129.200/32
-1. **Default:** 0.0.0.0/0
+1. **Default:** None
 
 ### CognitoAdminEmail
 
@@ -251,9 +252,21 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Type:** String
 1. **Allowed values:**
     1. A string in email format.
-    1. Example: `me@example.com`
+1. **Example:** `me@example.com`
+1. **Default:** None
 
 ### DatabaseStack
+
+1. **Synopsis:**
+   The name of the cloudformation stack deployed with the
+   [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
+   cloudformation template.
+   The values of the DatabaseStack exported outputs are used by the
+   [aws-cloudformation-ecs-senzing-stack-basic](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic).
+1. **Required:** Yes
+1. **Type:** String
+1. **Example:** `senzing-db`
+1. **Default:** None
 
 ### RunStreamProducer
 
@@ -344,6 +357,9 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Synopsis:**
    The version of Senzing installed onto the AWS Elastic File System.
    More information at [Senzing API Version History](https://senzing.com/releases/#api-releases).
+1. **Required:** Yes
+1. **Type:** Choice
+1. **Default:** Latest version in the list.
 
 ## Outputs
 
@@ -358,7 +374,11 @@ Technical information on AWS Cloudformation parameters can be seen at
 ### AccountID
 
 1. **Synopsis:**
-   The AWS account ID used to create the AWS Cloudformation.
+   The identifier of the AWS account used to create the cloudformation stack.
+1. **Details:**
+   This information will match the
+   [AWS Management Console](https://console.aws.amazon.com/console/home)
+   user dropdown "My Account" value.
 
 ### CertificateArn
 
