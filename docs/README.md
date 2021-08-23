@@ -507,7 +507,7 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Synopsis:**
    A URL showing how to reach the
    [Swagger User Interface](https://github.com/swagger-api/swagger-ui).
-   By default, Swagger is not enabled in the Cloudformation template.
+   By default, SwaggerUI is not enabled in the Cloudformation template.
    To enable, in the Cloudformation template set `Mappings`.`Constants`.`Run`.`Swagger` to "Yes"
    before deploying.
 
