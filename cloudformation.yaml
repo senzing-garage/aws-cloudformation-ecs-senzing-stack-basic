@@ -43,11 +43,6 @@ Metadata:
           default: Identify existing resources
         Parameters:
           - DatabaseStack
-      -
-        Label:
-          default: 'Optional: Initial data load'
-        Parameters:
-          - RunStreamProducer
     ParameterLabels:
       AcceptEula:
         default: >-
@@ -60,8 +55,6 @@ Metadata:
         default: 'Required: Name of stack having Senzing databases.'
       CognitoAdminEmail:
         default: 'Required: Email address for initial user.'
-      RunStreamProducer:
-        default: 'Optional: Would you like to have an initial set of data imported?'
       SecurityResponsibility:
         default: >-
           Required: A default deployment of this template is for public demonstration only.
@@ -113,15 +106,6 @@ Parameters:
   DatabaseStack:
     Default: '_'
     Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#databasestack'
-    Type: String
-
-
-  RunStreamProducer:
-    AllowedValues:
-      - 'No'
-      - 'Yes'
-    Default: 'No'
-    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#runstreamproducer'
     Type: String
 
 
@@ -245,6 +229,7 @@ Mappings:
       Sshd: Yes
       SshdMax: No
       StreamLoader: Yes
+      StreamProducer: Yes
       Swagger: No
       VpcFlowLogs: No
       WebApp: Yes
@@ -290,7 +275,7 @@ Conditions:
     - Yes
 
   IfRunStreamProducer: !Equals
-    - !Ref RunStreamProducer
+    - !FindInMap [Constants, Run, StreamProducer]
     - 'Yes'
 
   IfRunSwagger: !Equals
