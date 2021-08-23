@@ -227,7 +227,9 @@ Technical information on AWS Cloudformation parameters can be seen at
 
 ### CidrInbound
 
-1. **Synopsis:** A Classless Inter-Domain Routing (CIDR) value used to limit access to the system.
+1. **Synopsis:** A Classless Inter-Domain Routing
+   ([CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing))
+   value used to limit access to the system.
    This restricts the inbound traffic to requests from specified IP ranges.
    Examples:
     1. A system with the value `0.0.0.0/0` allows access from anywhere.
