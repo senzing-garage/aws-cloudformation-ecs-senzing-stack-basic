@@ -225,7 +225,7 @@ Mappings:
 
   Constants:
     Images:
-      ApiServer: public.ecr.aws/senzing/senzing-api-server:2.7.1
+      ApiServer: public.ecr.aws/senzing/senzing-poc-server:0.0.0
       BusyBox: public.ecr.aws/senzing/busybox
       G2Config: public.ecr.aws/senzing/g2configtool:1.4.3
       InitContainer: public.ecr.aws/senzing/init-container:1.6.13
@@ -2956,25 +2956,25 @@ Resources:
               <p>
                   <b>Links:</b>
                   <ol>
-                    <li>
+                    <li style="${WebApp}">
                         <b>Senzing Entity Search web app: </b> <a href="https://${Host}/app">https://${Host}/app</a>
                       <br />
                         (For more details see the <a href="https://github.com/Senzing/entity-search-web-app">GitHub repository</a>)
                     </li>
-                      <br />
-                    <li>
+                    <br />
+                    <li style="${SwaggerUI}">
                         <b>Senzing API Server: </b> <a href="https://${Host}/api/heartbeat">https://${Host}/api/heartbeat</a>
                       <br />
                         (For more details see the <a href="https://github.com/Senzing/senzing-api-server">GitHub repository</a>)
                     </li>
                     <br />
-                    <li>
+                    <li style="${Xterm}">
                         <b>Senzing XTerm: </b> <a href="https://${Host}/xterm">https://${Host}/xterm</a>
                         <br />
                         (For more details see the <a href="https://github.com/Senzing/docker-xterm">GitHub repository</a>)
                     </li>
                     <br />
-                    <li>
+                    <li style="${SwaggerUI}">
                         <b>Senzing HTTP REST API: </b> <a href="https://${Host}/swagger">https://${Host}/swagger</a>
                         <br />
                         (For more details see the <a href="https://github.com/Senzing/senzing-rest-api-specification">GitHub repository</a>)
@@ -3002,6 +3002,9 @@ Resources:
               </html>
             - Contact: !Ref CognitoAdminEmail
               Host: !GetAtt LoadBalancerPublic.DNSName
+              SwaggerUI: !If [ IfRunSwagger, "", "display: none"]
+              WebApp: !If [IfRunWebApp, "", "display: none"]
+              Xterm: !If [IfRunXterm, "", "display: none"]
           EmailSubject: !Sub 'Information for AWS Cloudformation ${AWS::StackName} stack'
           SMSMessage: 'Use the username {username} and the temporary password {####} to log in for the first time.'
       AutoVerifiedAttributes:
