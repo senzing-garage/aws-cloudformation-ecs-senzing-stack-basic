@@ -124,15 +124,13 @@ describing where we can improve.   Now on with the show...
                [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
                Cloudformation stack.
                Example:  `senzing-db`
-    1. Other parameters are optional.
-       The default values are fine.
+    2. At lower-right, click "Next" button.
+2. In **Configure stack options**
     1. At lower-right, click "Next" button.
-1. In **Configure stack options**
-    1. At lower-right, click "Next" button.
-1. In **Review senzing-basic**
+3. In **Review senzing-basic**
     1. Near the bottom, in **Capabilities**
         1. Check ":ballot_box_with_check: I acknowledge that AWS CloudFormation might create IAM resources."
-    1. At lower-right, click "Create stack" button.
+    2. At lower-right, click "Create stack" button.
 
 ## Using deployment
 
@@ -268,20 +266,6 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Type:** String
 1. **Example:** `senzing-db`
 1. **Default:** None
-
-### RunStreamProducer
-
-1. **Synopsis:**
-   Specify if example data should be loaded into the system during deployment.
-   The data loaded is called the
-   "[Senzing Synthetic Truth Set](https://senzing.zendesk.com/hc/en-us/articles/360047940434-Synthetic-Truth-Sets)".
-   If a system without example data (i.e. a "clean" system) is desired, choose "No".
-1. **Required:** Yes
-1. **Type:** Choice
-1. **Allowed values:**
-    1. Yes
-    1. No
-1. **Default:** Yes
 
 ### SecurityResponsibility
 

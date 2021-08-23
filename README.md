@@ -28,15 +28,13 @@ deploys Senzing for use with a previously deployed
                [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
                Cloudformation stack
                Example:  `senzing-db`
-    1. Other parameters are optional.
-       The default values are fine.
+    2. At lower-right, click "Next" button.
+2. In **Configure stack options**
     1. At lower-right, click "Next" button.
-1. In **Configure stack options**
-    1. At lower-right, click "Next" button.
-1. In **Review senzing-basic**
+3. In **Review senzing-basic**
     1. Near the bottom, in **Capabilities**
         1. Check ":ballot_box_with_check: I acknowledge that AWS CloudFormation might create IAM resources."
-    1. At lower-right, click "Create stack" button.
+    2. At lower-right, click "Create stack" button.
 
 ## Additional topics
 
