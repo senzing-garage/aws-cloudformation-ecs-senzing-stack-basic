@@ -164,7 +164,7 @@ Rules:
           - !Equals
             - !Ref CidrInbound
             - '10.0.0.0/32'
-        AssertDescription: 'Entering initial user email address is required to proceed'
+        AssertDescription: 'Inbound CIDR must be in the format n.n.n.n/n'
 
 
   ConfirmCognitoAdminEmail:
@@ -785,7 +785,6 @@ Resources:
 
 
   IamPolicyCognito:
-    Condition: IfUsingWeb
     Properties:
       PolicyName: !Sub "${AWS::StackName}-iam-policy-cognito"
       PolicyDocument:
