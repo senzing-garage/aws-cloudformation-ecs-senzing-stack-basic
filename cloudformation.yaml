@@ -209,7 +209,7 @@ Mappings:
 
   Constants:
     Images:
-      ApiServer: public.ecr.aws/senzing/senzing-poc-server:0.0.0
+      ApiServer: public.ecr.aws/senzing/senzing-poc-server:1.0.0
       BusyBox: public.ecr.aws/senzing/busybox
       G2Config: public.ecr.aws/senzing/g2configtool:1.4.3
       InitContainer: public.ecr.aws/senzing/init-container:1.6.13
@@ -3075,6 +3075,9 @@ Resources:
             -
               Name: SENZING_API_SERVER_URL_BASE_PATH
               Value: /api
+            -
+              Name: SENZING_SQS_LOAD_QUEUE_URL
+              Value: !Sub "${AWS::StackName}-sqs-input"
           Essential: true
           Image: !FindInMap [Constants, Images, ApiServer]
           LogConfiguration:
