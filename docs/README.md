@@ -384,6 +384,7 @@ Technical information on AWS Cloudformation parameters can be seen at
 
 1. **Synopsis:**
    Amazon Resource Name (ARN) of certificate used for SSL support.
+1. **Details:**
    More information at
    [AWS LoadBalancer Console](https://console.aws.amazon.com/ec2/v2/home#LoadBalancers).
    Select a load balancer, view the "Listeners" tab, then click "View/edit certificates".
@@ -422,6 +423,12 @@ Technical information on AWS Cloudformation parameters can be seen at
 
 ### QueueRedoerDeadLetter
 
+1. **Synopsis:**
+   The queue to which redo records that are not able to be redone by the Senzing Engine are sent.
+   In otherwords, if the message is malformed, or Senzing denied redoing the message.
+1. **Details:**
+   More information at [AWS SQS Console](https://console.aws.amazon.com/sqs/v2/home?#/queues).
+
 ### QueueRedoerInput
 
 1. **Synopsis:**
@@ -444,7 +451,7 @@ Technical information on AWS Cloudformation parameters can be seen at
 ### SshPassword
 
 1. **Synopsis:**
-   Password to be used when logging into the SSHD container.
+   The [SshUsername](#sshusername)'s password to be used when logging into the SSHD container.
 
 ### SshUsername
 
@@ -480,9 +487,10 @@ Technical information on AWS Cloudformation parameters can be seen at
 
 1. **Synopsis:**
    A URL showing how to reach the
-   [Senzing API Server](https://github.com/Senzing/senzing-api-server)
-   directly.
-   The `/heartbeat` URI path simply demonstrates that the API server is responding.
+   [Senzing API Server](https://github.com/Senzing/senzing-api-server)'s
+   `/heartbeat` URI path.
+   This demonstrates that the API server is responding.
+1. **Details:**
    For more URIs, see
    [SwaggerUrl output value](#urlswagger).
 
