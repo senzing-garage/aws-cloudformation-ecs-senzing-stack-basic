@@ -208,8 +208,7 @@ template can be see in the [AWS Management Console](https://console.aws.amazon.c
 1. Visit [AWS Cloudformation console](https://console.aws.amazon.com/cloudformation/home).
 1. Choose appropriate "Stack name"
 1. Choose "Outputs" tab.
-    1. For descriptions of outputs, click on the value for `ADescriptionOfOutputs`,
-       which links to [Outputs](#outputs) further down this page.
+    1. For descriptions of outputs, visit [Outputs](#outputs) further down this page.
 
 ## Parameters
 
