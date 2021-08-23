@@ -276,7 +276,7 @@ Conditions:
 
   IfRunStreamProducer: !Equals
     - !FindInMap [Constants, Run, StreamProducer]
-    - 'Yes'
+    - Yes
 
   IfRunSwagger: !Equals
     - !FindInMap [Constants, Run, Swagger]
