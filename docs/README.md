@@ -262,7 +262,7 @@ Technical information on AWS Cloudformation parameters can be seen at
    The name of the cloudformation stack deployed with the
    [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
    cloudformation template.
-   The values of the DatabaseStack exported outputs are used by the
+   The DatabaseStack exported output values are used by the
    [aws-cloudformation-ecs-senzing-stack-basic](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic).
 1. **Required:** Yes
 1. **Type:** String
