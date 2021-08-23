@@ -370,7 +370,7 @@ Technical information on AWS Cloudformation parameters can be seen at
    An alias for [UrlWebApp](#urlwebapp).
    Since it's one of the first things to look at, it is listed first.
 1. **Details:**
-   It is listed first because the name "cheats" and uses a zero instead of a capital "o".
+   It is listed first in alphabetical order because the name "cheats" and uses a zero instead of a capital "o".
 
 ### AccountID
 
@@ -402,7 +402,7 @@ Technical information on AWS Cloudformation parameters can be seen at
 
 1. **Synopsis:**
    The queue to which records that are not able to be ingested into Senzing Engine are sent.
-   In otherwords, if the JSON message is malformed, or Senzing denied inserting into the Senzing Engine.
+   In otherwords, if the JSON message is malformed or Senzing denied inserting into the Senzing Engine.
 1. **Details:**
    More information at [AWS SQS Console](https://console.aws.amazon.com/sqs/v2/home?#/queues).
 
@@ -426,7 +426,7 @@ Technical information on AWS Cloudformation parameters can be seen at
 
 1. **Synopsis:**
    The queue to which redo records that are not able to be redone by the Senzing Engine are sent.
-   In otherwords, if the message is malformed, or Senzing denied redoing the message.
+   In otherwords, if the message is malformed or Senzing denied redoing the message.
 1. **Details:**
    More information at [AWS SQS Console](https://console.aws.amazon.com/sqs/v2/home?#/queues).
 
@@ -460,6 +460,7 @@ Technical information on AWS Cloudformation parameters can be seen at
    User ID to be used when logging into the SSHD container.
 1. **Details:**
    Usually "root".
+   Logging in also requires the [SshPassword](#sshpassword) value.
 
 ### SubnetPublic1
 
