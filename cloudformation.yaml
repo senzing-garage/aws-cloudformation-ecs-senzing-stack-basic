@@ -4108,6 +4108,12 @@ Resources:
             -
               Name: SENZING_WEB_SERVER_VIRTUAL_PATH
               Value: /app
+            -
+              Name: SENZING_WEB_SERVER_ADMIN_AUTH_MODE
+              Value: NONE
+            -
+              Name: SENZING_WEB_SERVER_URL
+              Value: !Sub "http://${LoadBalancerPublic.DNSName}:8251/app"
           Essential: true
           Image: !FindInMap [Constants, Images, WebApp]
           LogConfiguration:
@@ -4120,6 +4126,9 @@ Resources:
           PortMappings:
             - ContainerPort: 8251
               HostPort: 8251
+              Protocol: tcp
+            - ContainerPort: 8255
+              HostPort: 8255
               Protocol: tcp
           Privileged: false
           ReadonlyRootFilesystem: false
