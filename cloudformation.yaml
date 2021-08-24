@@ -148,7 +148,7 @@ Rules:
           - !Equals
             - !Ref CidrInbound
             - '10.0.0.0/32'
-        AssertDescription: 'Entering initial user email address is required to proceed'
+        AssertDescription: 'Inbound CIDR must be in the format n.n.n.n/n'
 
 
   ConfirmCognitoAdminEmail:
@@ -751,6 +751,7 @@ Resources:
 
 
   IamPolicyCertificates:
+    Condition: IfUsingWeb
     Properties:
       PolicyName: !Sub "${AWS::StackName}-iam-policy-certificates"
       PolicyDocument:
@@ -760,7 +761,7 @@ Resources:
               - iam:UploadServerCertificate
             Effect: Allow
             Resource:
-              - '*'
+              - !GetAtt IamServerCertificate.Arn
         Version: '2012-10-17'
       Roles:
        - !Ref IamRoleLambda
@@ -858,7 +859,6 @@ Resources:
         Version: '2012-10-17'
       Roles:
        - !Ref IamRoleApiServer
-       - !Ref IamRoleFlowLog
        - !Ref IamRoleG2ConfigTool
        - !Ref IamRoleInitEfs
        - !Ref IamRoleInitPostgres
@@ -877,6 +877,7 @@ Resources:
 
 
   IamPolicyPassRole:
+    Condition: IfUsingWeb
     Properties:
       PolicyName: !Sub "${AWS::StackName}-iam-policy-pass-role"
       PolicyDocument:
@@ -886,7 +887,14 @@ Resources:
               - iam:PassRole
             Effect: Allow
             Resource:
-              - '*'
+              - !GetAtt IamRoleFlowLog.Arn
+              - !GetAtt IamRoleG2ConfigTool.Arn
+              - !GetAtt IamRoleInitEfs.Arn
+              - !GetAtt IamRoleLambda.Arn
+              - !GetAtt IamRoleStreamProducer.Arn
+              - !GetAtt IamRoleInstallSenzing.Arn
+              - !GetAtt IamRoleInitPostgres.Arn
+              - !GetAtt IamRoleInitSenzing.Arn
         Version: '2012-10-17'
       Roles:
        - !Ref IamRoleFlowLog
@@ -894,6 +902,9 @@ Resources:
        - !Ref IamRoleInitEfs
        - !Ref IamRoleLambda
        - !Ref IamRoleStreamProducer
+       - !Ref IamRoleInstallSenzing
+       - !Ref IamRoleInitPostgres
+       - !Ref IamRoleInitSenzing
     Type: AWS::IAM::Policy
 
 
@@ -913,23 +924,6 @@ Resources:
        - !Ref IamRoleLambda
        - !Ref IamRoleSwagger
        - !Ref IamRoleXterm
-    Type: AWS::IAM::Policy
-
-
-  IamPolicyS3:
-    Properties:
-      PolicyName: !Sub "${AWS::StackName}-iam-policy-s3"
-      PolicyDocument:
-        Statement:
-          -
-            Action:
-              - s3:GetObject
-            Effect: Allow
-            Resource:
-              - '*'
-        Version: '2012-10-17'
-      Roles:
-       - !Ref IamRoleLambda
     Type: AWS::IAM::Policy
 
 
@@ -1666,8 +1660,6 @@ Resources:
 
   LambdaFunctionCognitoCreateUser:
     Condition: IfUsingWeb
-    DependsOn:
-     - IamPolicyRoute53
     Properties:
       Code:
         ZipFile: |
