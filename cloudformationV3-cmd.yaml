@@ -193,14 +193,14 @@ Mappings:
       WebApp: docker.io/senzing/entity-search-web-app:2.6.0
       Xterm: docker.io/senzing/xterm:1.2.5
     Run:
-      ApiServer: Yes
-      Redoer: Yes
+      ApiServer: No
+      Redoer: No
       Sshd: Yes
       SshdMax: No
-      StreamLoader: Yes
-      StreamProducer: Yes
+      StreamLoader: No
+      StreamProducer: No
       Swagger: No
-      WebApp: Yes
+      WebApp: No
       Xterm: Yes
     Stack:
       Name: basic
@@ -939,78 +939,6 @@ Resources:
         - "/senzing/${StackName}/${AWS::StackName}"
         - StackName: !FindInMap [Constants, Stack, Name]
     Type: AWS::Logs::LogGroup
-
-  # -- Logging Queries ----------------------------------------------
-
-  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-logs-querydefinition.html
-
-  SenzingDebugQuery:
-    Properties:
-      LogGroupNames:
-        - !If [
-            IfUsingWeb,
-            !Ref LogsLogGroupLambdaCognitoCreateUser,
-            !Ref "AWS::NoValue",
-          ]
-        - !If [
-            IfUsingWeb,
-            !Ref LogsLogGroupLambdaGenerateCertificate,
-            !Ref "AWS::NoValue",
-          ]
-        - !Ref LogsLogGroupLambdaRandomPassword
-        - !Ref LogsLogGroupLambdaRandomString
-        - !Ref LogsLogGroupLambdaRunTask
-        - !Ref LogsLogGroupLambdaRunTaskAndWait
-        - !Ref LogsLogGroupLambdaStringToLower
-        - !Ref LogsLogGroupLambdaWaitForEfs
-      Name: !Sub "Search in ${AWS::StackName} Lambda logs"
-      QueryString: fields @timestamp, @message | sort @timestamp desc | filter @message like 'SUCCESS'
-    Type: AWS::Logs::QueryDefinition
-
-  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cloudwatch-dashboard.html
-  SenzingLogDashboard:
-    Properties:
-      DashboardBody: !Sub
-        - '{"widgets":[
-          {"type":"log","width":24,"height":6,
-          "properties":{"title": "Senzing error logs","region":"${AWS::Region}", "view": "table",
-          "query": "SOURCE \"${LogsLogGroupMain}\" | fields @timestamp, @message | sort @timestamp desc | filter @message like /(?i)ERROR/ | display @timestamp, @message, @logStream "}},
-
-          {"type":"log","width":24,"height":6,
-          "properties":{"title": "Senzing records loaded (10m interval)","region":"${AWS::Region}", "view": "timeSeries",
-          "query": "SOURCE \"${LogsLogGroupMain}\" | fields @message | sort @timestamp desc | filter @message like \"senzing-50010125I G2 engine statistics\" | parse @message \"*\\\"addedRecords\\\": *,*\" as t1, match, t2 | stats sum(match) as records by bin(10m) "}},
-
-          {"type":"log","width":24,"height":6,
-          "properties":{"title": "Senzing redos processed (10m interval)","region":"${AWS::Region}", "view": "timeSeries",
-          "query": "SOURCE \"${LogsLogGroupMain}\" | fields @message | sort @timestamp desc | filter @message like \"senzing-50100125I G2 engine statistics\" | parse @message \"*\\\"addedRecords\\\": *,*\" as t1, match, t2 | stats sum(match) as redos by bin(10m) "}},
-
-          {"type":"metric","width":24,"height":6,
-          "properties":{"title": "Senzing Core DB Read/WriteIOPS","region":"${AWS::Region}","view": "timeSeries", "stacked": false,
-          "metrics": [
-          [ "AWS/RDS", "VolumeReadIOPs", "DBClusterIdentifier", "${StackNameAsLower}-aurora-senzing-core-cluster" ],
-          [ ".", "VolumeWriteIOPs", ".", "." ]
-          ]}},
-
-          {"type":"log","width":24,"height":6,
-          "properties":{"title": "Senzing engine stats","region":"${AWS::Region}","view": "table",
-          "query": "SOURCE \"${LogsLogGroupMain}\" | fields @message | sort @timestamp desc | filter @message like \"senzing-50010125I G2 engine statistics\" | parse @message \"*\\\"highContentionFeat\\\": [*],*\\\"highContentionResEnt\\\": [*],*\\\"records\\\": *,*\" as t1, highContentionFeat, t2, highContentionResEnt, t3, records, t4 | display @timestamp, records, highContentionFeat, highContentionResEnt "}},
-
-          {"type":"log","width":24,"height":6,
-          "properties":{"title": "Senzing engine stats logs","region":"${AWS::Region}", "view": "table",
-          "query": "SOURCE \"${LogsLogGroupMain}\" | fields @message | sort @timestamp desc | filter @message like \"senzing-50010125I G2 engine statistics\" "}},
-
-          {"type":"log","width":24,"height":6,
-          "properties":{"title": "Senzing governor wait","region":"${AWS::Region}", "view": "table",
-          "query": "SOURCE \"${LogsLogGroupMain}\" | fields @message | sort @timestamp desc | filter @message like \"senzing-50170005I Governor waiting\" "}},
-
-          {"type":"log","width":24,"height":6,
-          "properties":{"title": "Senzing GET logs","region":"${AWS::Region}", "view": "table",
-          "query": "SOURCE \"${LogsLogGroupMain}\" | fields @timestamp, @message | sort @timestamp desc | filter @message like \"GET\" "}}
-
-          ]}'
-        - StackNameAsLower: !GetAtt LambdaRunnerStackNameAsLower.OutputString
-      DashboardName: !Sub "Senzing-${AWS::StackName}-Dashboard"
-    Type: AWS::CloudWatch::Dashboard
 
   # -- Cloud, subnets, routing --------------------------------------------------
 
@@ -4188,7 +4116,7 @@ Resources:
           PredefinedMetricType: ECSServiceAverageCPUUtilization
         ScaleInCooldown: 1200
         ScaleOutCooldown: 300
-        TargetValue: 20
+        TargetValue: 5
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
 
   ApplicationAutoScalingScalingPolicyStreamLoader:

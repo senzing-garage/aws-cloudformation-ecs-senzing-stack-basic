@@ -187,8 +187,8 @@ Mappings:
       InitContainer: docker.io/senzing/init-container:1.7.5
       Redoer: public.ecr.aws/senzing/redoer-with-data:1.5.1
       Sshd: docker.io/senzing/sshd:1.2.8
-      StreamLoader: docker.io/senzing/stream-loader-with-data-staging:1.10.1
-      StreamProducer: public.ecr.aws/senzing/stream-producer:1.6.5
+      StreamLoader: public.ecr.aws/senzing/stream-loader-with-data:1.10.1
+      StreamProducer: docker.io/senzing/stream-producer:1.7.0
       Swagger: docker.io/swaggerapi/swagger-ui:v4.10.3
       WebApp: docker.io/senzing/entity-search-web-app:2.6.0
       Xterm: docker.io/senzing/xterm:1.2.5
@@ -207,8 +207,8 @@ Mappings:
     StreamProducer:
       DataSource: TEST
       EntityType: GENERIC
-      InputUrl: https://s3.amazonaws.com/public-read-access/TestDataSets/SenzingTruthSet/truth-set.json
-      RecordMax: 0
+      InputUrl: https://public-read-access.s3.amazonaws.com/TestDataSets/test-dataset-100m.json.gz
+      RecordMax: 20000000
       RecordMin: 0
 
 # -----------------------------------------------------------------------------
@@ -1697,6 +1697,117 @@ Resources:
       Timeout: 600
     Type: AWS::Lambda::Function
 
+  LambdaFunctionRunStreamProducerTasks:
+    Condition: IfRunStreamProducer
+    DependsOn:
+      - LambdaRunnerG2ConfigTool
+      - LambdaRunnerWaitForEfs
+      - SqsInput
+    Properties:
+      Code:
+        ZipFile: |
+          #!/usr/bin/env python3
+
+          import boto3
+          import cfnresponse
+          import datetime
+          import json
+          import logging
+          import traceback
+          from json import JSONEncoder
+
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+
+          class DateTimeEncoder(JSONEncoder):
+              def default(self, obj):
+                  if isinstance(obj, (datetime.date, datetime.datetime)):
+                      return obj.isoformat()
+
+          def handler(event, context):
+              result = cfnresponse.SUCCESS
+              response = {}
+              try:
+                  logger.info("Event: {0}".format(json.dumps(event)))
+                  if event['RequestType'] in ['Create', 'Update']:
+                      properties = event.get('ResourceProperties', {})
+                      run_task_parameters = properties.get('RunTaskParameters', {})
+
+                      # Change strings to integers.
+
+                      numbers = [
+                          "count",
+                          "recordMax",
+                          "recordMin"
+                      ]
+                      for number in numbers:
+                          if number in run_task_parameters:
+                              run_task_parameters[number] = int(run_task_parameters[number])
+
+                      # Make AWS ECS request to start multiple producers.
+                      #  the stride is the number of records each producer
+                      #  should produce
+                      stride = 10_000_000
+                      max = run_task_parameters.pop("recordMax")
+                      start = run_task_parameters.pop("recordMin")
+                      if max - start < stride:
+                          end = max
+                      else:
+                          end = start + stride
+                      logger.info(f"init SENZING_RECORD_MIN: {start} SENZING_RECORD_MAX: {end} total records: {max}")
+                      done = False
+                      while not done:
+                        logger.info(f"SENZING_RECORD_MIN: {start} SENZING_RECORD_MAX: {end}")
+                        run_task_parameters["overrides"] = {
+                            'containerOverrides': [
+                              {
+                                'name' : "producer",
+                                'environment': [
+                                  {
+                                    'name': 'SENZING_RECORD_MAX',
+                                    'value': f'{end}'
+                                  },
+                                  {
+                                    'name': 'SENZING_RECORD_MIN',
+                                    'value': f'{start}'
+                                  },
+                                ],
+                              }
+                            ]
+                          }
+                        logger.info(f"run_task_parameters: {run_task_parameters}")
+                        ecs = boto3.client('ecs')
+                        response = ecs.run_task(**run_task_parameters)
+                        logger.info(f"run_task response: {response}")
+                        # calculate parameters for the next task
+                        start = end + 1
+                        if end == max :
+                            done = True
+                        elif (end + stride) > max :
+                            end = max
+                        else :
+                            end += stride
+
+                  logger.info("Response: {0}".format(json.dumps(response, cls=DateTimeEncoder)))
+
+              except Exception as e:
+                  logger.error(e)
+                  traceback.print_exc()
+                  result = cfnresponse.FAILED
+              finally:
+                  cfnresponse.send(event, context, result, {})
+
+      Description: Runs stream producer tasks.
+      FunctionName: !Sub "${AWS::StackName}-lambda-run-stream-producer-tasks"
+      Handler: index.handler
+      Role: !GetAtt IamRoleLambda.Arn
+      Runtime: python3.8
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-lambda-run-stream-producer-tasks"
+      Timeout: 30
+    Type: AWS::Lambda::Function
+
   LambdaFunctionRunTask:
     DependsOn:
       - Ec2SubnetRouteTableAssociationPrivate1
@@ -2281,6 +2392,8 @@ Resources:
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html#ECS.Client.run_task
         cluster: !Ref EcsCluster
         count: 1
+        recordMax: !FindInMap [Constants, StreamProducer, RecordMax]
+        recordMin: !FindInMap [Constants, StreamProducer, RecordMin]
         launchType: FARGATE
         networkConfiguration:
           awsvpcConfiguration:
@@ -2297,7 +2410,7 @@ Resources:
           - key: Name
             value: !Sub "${AWS::StackName}-lambda-runner-stream-producer-run-task-parameters"
         taskDefinition: !Ref EcsTaskDefinitionStreamProducer
-      ServiceToken: !GetAtt LambdaFunctionRunTask.Arn
+      ServiceToken: !GetAtt LambdaFunctionRunStreamProducerTasks.Arn
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-lambda-runner-stream-producer"
@@ -3210,7 +3323,7 @@ Resources:
             - Name: SENZING_SQS_REDO_QUEUE_URL
               Value: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${SqsRedoerInput.QueueName}"
             - Name: SENZING_SUBCOMMAND
-              Value: read-from-sqs-withinfo
+              Value: read-from-sqs
             - Name: SENZING_THREADS_PER_PROCESS
               Value: "8"
           Essential: true
@@ -3520,7 +3633,7 @@ Resources:
             - Name: SENZING_SQS_QUEUE_URL
               Value: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${SqsInput.QueueName}"
             - Name: SENZING_SUBCOMMAND
-              Value: sqs-withinfo
+              Value: sqs
             - Name: SENZING_THREADS_PER_PROCESS
               Value: "8"
           Essential: true
@@ -3597,10 +3710,14 @@ Resources:
               Value: !FindInMap [Constants, StreamProducer, RecordMin]
             - Name: SENZING_RECORD_MONITOR
               Value: "100000"
+            - Name: SENZING_STREAM_LOADER_DIRECTIVE_ACTION
+              Value: "reevaluateRecord"
+            - Name: SENZING_STREAM_LOADER_DIRECTIVE_NAME
+              Value: "senzingStreamLoader"
             - Name: SENZING_SQS_QUEUE_URL
               Value: !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${SqsInput.QueueName}"
             - Name: SENZING_SUBCOMMAND
-              Value: json-to-sqs
+              Value: gzipped-json-to-sqs-batch
             - Name: SENZING_THREADS_PER_PRINT
               Value: "30"
           Essential: true
@@ -4188,7 +4305,7 @@ Resources:
           PredefinedMetricType: ECSServiceAverageCPUUtilization
         ScaleInCooldown: 1200
         ScaleOutCooldown: 300
-        TargetValue: 20
+        TargetValue: 5
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
 
   ApplicationAutoScalingScalingPolicyStreamLoader:
