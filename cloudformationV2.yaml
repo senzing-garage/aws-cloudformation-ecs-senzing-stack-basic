@@ -114,6 +114,7 @@ Parameters:
 
   SenzingVersion:
     AllowedValues:
+      - "2.8.8"
       - "2.8.7"
       - "2.8.4"
       - "2.8.3"
@@ -123,7 +124,7 @@ Parameters:
       - "2.6.0"
       - "2.5.1"
       - "2.5.0"
-    Default: "2.8.7"
+    Default: "2.8.8"
     Description: "Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzingversion"
     Type: String
 
@@ -183,6 +184,8 @@ Rules:
 
 Mappings:
   SenzingVersionMap:
+    "2.8.8":
+      value: "senzingapi-2.8.8-22088"
     "2.8.7":
       value: "senzingapi-2.8.7-22049"
     "2.8.4":
