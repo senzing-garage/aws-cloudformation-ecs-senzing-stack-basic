@@ -4341,14 +4341,14 @@ Outputs:
 
   UrlPrivateApiServer:
     Condition: IfUsingApiServer
-    Description: "Private URL for API Server. Help: https://hub.senzing.com/aws-cloudformation-ecs-poc-simple/#urlprivateapiserver"
+    Description: "Private URL for API Server. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#urlprivateapiserver"
     Export:
       Name: !Sub "${AWS::StackName}-private-url-api-server"
     Value: !Sub "http://${LoadBalancerPrivate.DNSName}:8250/api/"
 
   UrlPrivateApiServerHeartbeat:
     Condition: IfUsingApiServer
-    Description: "Private URL for API Server's heartbeat. Help: https://hub.senzing.com/aws-cloudformation-ecs-poc-simple/#urlprivateapiserverheartbeat"
+    Description: "Private URL for API Server's heartbeat. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#urlprivateapiserverheartbeat"
     Value: !Sub "http://${LoadBalancerPrivate.DNSName}:8250/api/heartbeat/"
 
   UrlSwagger:
