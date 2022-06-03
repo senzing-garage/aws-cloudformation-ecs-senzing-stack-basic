@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - added image versions to stack output
 - changed UserPoolDomain to include random suffix
 
+
 ## [1.2.8] - 2022-05-11
 
 ### Changed in 1.2.8
