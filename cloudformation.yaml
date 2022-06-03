@@ -2322,7 +2322,7 @@ Resources:
         Fn::ImportValue: !Sub "${DatabaseStack}-ec2-VpcId"
     Type: Custom::LambdaRunnerSubnets
 
-  LambdaRunnerUserDomainPoolSuffix:
+  LambdaRunnerUserPoolDomainSuffix:
     Properties:
       Length: 8
       LowerCase: True
@@ -2330,7 +2330,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-lambda-runner-user-domain-suffix"
-    Type: Custom::LambdaRunnerUserDomainPoolSuffix
+    Type: Custom::LambdaRunnerUserPoolDomainSuffix
 
   LambdaRunnerWaitForEfs:
     Properties:
@@ -2841,7 +2841,7 @@ Resources:
       Domain: !Join
         - "-"
         - - !GetAtt LambdaRunnerStackNameAsLower.OutputString
-          - !GetAtt LambdaRunnerUserDomainPoolSuffix.RandomString
+          - !GetAtt LambdaRunnerUserPoolDomainSuffix.RandomString
       UserPoolId: !Ref UserPool
     Type: AWS::Cognito::UserPoolDomain
 
