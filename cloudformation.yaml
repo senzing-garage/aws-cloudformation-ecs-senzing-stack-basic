@@ -305,7 +305,7 @@ Resources:
                   "SUPPORTPATH": "/opt/senzing/data"
               },
               "SQL": {
-                  "BACKEND": "HYBRID",
+                  "BACKEND": "${Backend}",
                   "CONNECTION":"postgresql://${DatabaseUsername}:${DatabasePassword}@${DatabaseHostCore}:${DatabasePortCore}:${DatabaseName}"
               },
               "C1": {
@@ -325,7 +325,10 @@ Resources:
                   "RES_FEAT_STAT": "C1"
               }
           }
-        - DatabaseHostCore:
+        - Backend:
+            Fn::ImportValue:
+              Fn::Sub: "${DatabaseStack}-database-configuration"
+          DatabaseHostCore:
             Fn::ImportValue:
               Fn::Sub: "${DatabaseStack}-database-host-core"
           DatabaseHostLibfeat:
