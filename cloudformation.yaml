@@ -866,6 +866,11 @@ Resources:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-lambda-run-task-and-wait"
     Type: AWS::Logs::LogGroup
 
+  LogsLogGroupLambdaSenzingEngineConfigurationJson:
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-lambda-senzing-engine-configuration-json"
+    Type: AWS::Logs::LogGroup
+
   LogsLogGroupLambdaStringToLower:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-lambda-string-to-lower"
@@ -1848,9 +1853,10 @@ Resources:
                       database_host_core = properties.get('DatabaseHostCore', '')
                       database_port_core = properties.get('DatabasePortCore', '')
                       database_name = properties.get('DatabaseName', '')
+                      logger.info(f"db_config={db_config}")
                       if db_config == 'Single':
-                          response_data["ConfigJSON"] =
-                              ( '{''
+                          response_data["ConfigJSON"] = (
+                                '{'
                                 '    "PIPELINE": {'
                                 '        "CONFIGPATH": "/etc/opt/senzing",'
                                 '        "RESOURCEPATH": "/opt/senzing/g2/resources",'
@@ -1866,8 +1872,8 @@ Resources:
                           database_port_res = properties.get('DatabasePortRes', '')
                           database_host_libfeat = properties.get('DatabaseHostLibfeat', '')
                           database_port_libfeat = properties.get('DatabasePortLibfeat', '')
-                          response_data["ConfigJSON"] =
-                              ( '{''
+                          response_data["ConfigJSON"] = (
+                                '{'
                                 '    "PIPELINE": {'
                                 '        "CONFIGPATH": "/etc/opt/senzing",'
                                 '        "RESOURCEPATH": "/opt/senzing/g2/resources",'
@@ -1894,6 +1900,7 @@ Resources:
                                 '        "RES_FEAT_STAT": "C1"'
                                 '    }'
                                 '}')
+                      logger.info(f'ConfigJSON={response_data["ConfigJSON"]}')
               except Exception as e:
                   logger.error(e)
                   traceback.print_exc()
