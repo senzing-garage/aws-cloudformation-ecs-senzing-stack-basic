@@ -29,6 +29,7 @@ Metadata:
           default: Identify existing database stack
         Parameters:
           - DatabaseStack
+          - MultipleDatabases
       - Label:
           default: Security
         Parameters:
@@ -97,6 +98,14 @@ Parameters:
   DatabaseStack:
     Default: "_"
     Description: "Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#databasestack"
+    Type: String
+
+  MultipleDatabases:
+    AllowedValues:
+      - "Single"
+      - "Multiple"
+    Default: "Multiple"
+    Description: "Help: https://hub.senzing.com/aws-cloudformation-database-cluster/#multipledatabases"
     Type: String
 
   SecurityResponsibility:
@@ -2304,8 +2313,9 @@ Resources:
   LambdaRunnerSenzingEngineConfigurationJson:
     Properties:
       DatabaseConfiguration:
-        Fn::ImportValue:
-          Fn::Sub: "${DatabaseStack}-database-configuration"
+        !Ref MultipleDatabases
+        # Fn::ImportValue:
+        #   Fn::Sub: "${DatabaseStack}-database-configuration"
       DatabaseHostCore:
         Fn::ImportValue:
           Fn::Sub: "${DatabaseStack}-database-host-core"
