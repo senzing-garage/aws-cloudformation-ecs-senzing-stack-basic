@@ -29,7 +29,6 @@ Metadata:
           default: Identify existing database stack
         Parameters:
           - DatabaseStack
-          - MultipleDatabases
       - Label:
           default: Security
         Parameters:
@@ -51,8 +50,6 @@ Metadata:
         default: "Required: Provide the email address for the administrative user."
       DatabaseStack:
         default: "Required: Provide the name of stack containing the Senzing database(s)."
-      MultipleDatabases:
-        default: "Optional: Is the database stack configured for single or multiple databases?"
       SecurityResponsibility:
         default: >-
           Required: A default deployment of this template is for demonstration only.
@@ -100,14 +97,6 @@ Parameters:
   DatabaseStack:
     Default: "_"
     Description: "Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#databasestack"
-    Type: String
-
-  MultipleDatabases:
-    AllowedValues:
-      - "Single"
-      - "Multiple"
-    Default: "Multiple"
-    Description: "Help: https://hub.senzing.com/aws-cloudformation-database-cluster/#multipledatabases"
     Type: String
 
   SecurityResponsibility:
@@ -1858,12 +1847,18 @@ Resources:
                   logger.info("Event: {0}".format(json.dumps(event)))
                   if event['RequestType'] in ['Create', 'Update']:
                       properties = event.get('ResourceProperties', {})
-                      db_config = properties.get('DatabaseConfiguration', 'Multiple')
+                      database_name = properties.get('DatabaseName', '')
                       database_user_name = properties.get('DatabaseUsername', '')
                       database_password = properties.get('DatabasePassword', '')
                       database_host_core = properties.get('DatabaseHostCore', '')
                       database_port_core = properties.get('DatabasePortCore', '')
-                      database_name = properties.get('DatabaseName', '')
+                      database_host_res = properties.get('DatabaseHostRes', '')
+                      database_port_res = properties.get('DatabasePortRes', '')
+                      database_host_libfeat = properties.get('DatabaseHostLibfeat', '')
+                      database_port_libfeat = properties.get('DatabasePortLibfeat', '')
+                      db_config = 'Multiple'
+                      if database_host_core == database_host_res == database_host_libfeat:
+                          db_config = 'Single'
                       logger.info(f"db_config={db_config}")
                       if db_config == 'Single':
                           response_data["ConfigJSON"] = (
@@ -1879,10 +1874,6 @@ Resources:
                                 '    }'
                                 '}')
                       else:
-                          database_host_res = properties.get('DatabaseHostRes', '')
-                          database_port_res = properties.get('DatabasePortRes', '')
-                          database_host_libfeat = properties.get('DatabaseHostLibfeat', '')
-                          database_port_libfeat = properties.get('DatabasePortLibfeat', '')
                           response_data["ConfigJSON"] = (
                                 '{'
                                 '    "PIPELINE": {'
@@ -2313,12 +2304,6 @@ Resources:
 
   LambdaRunnerSenzingEngineConfigurationJson:
     Properties:
-      DatabaseConfiguration:
-        !Ref MultipleDatabases
-        # In the future, use the import value from the database stack.
-        #  for now use the drop down value for backward compatibility
-        # Fn::ImportValue:
-        #   Fn::Sub: "${DatabaseStack}-database-configuration"
       DatabaseHostCore:
         Fn::ImportValue:
           Fn::Sub: "${DatabaseStack}-database-host-core"
@@ -4363,12 +4348,6 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}-certificate-arn"
     Value: !GetAtt IamServerCertificate.Arn
-
-  DatabaseConfiguration:
-    Description: "The configuration this database was set up as.  Help: https://hub.senzing.com/aws-cloudformation-database-cluster/#multipledatabases"
-    Export:
-      Name: !Sub "${AWS::StackName}-database-configuration"
-    Value: !Ref MultipleDatabases
 
   Host:
     Condition: IfUsingWeb
