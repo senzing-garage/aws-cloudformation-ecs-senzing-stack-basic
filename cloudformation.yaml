@@ -51,6 +51,8 @@ Metadata:
         default: "Required: Provide the email address for the administrative user."
       DatabaseStack:
         default: "Required: Provide the name of stack containing the Senzing database(s)."
+      MultipleDatabases:
+        default: "Optional: Is the database stack configured for single or multiple databases?"
       SecurityResponsibility:
         default: >-
           Required: A default deployment of this template is for demonstration only.
@@ -1909,7 +1911,6 @@ Resources:
                                 '        "RES_FEAT_STAT": "C1"'
                                 '    }'
                                 '}')
-                      logger.info(f'ConfigJSON={response_data["ConfigJSON"]}')
               except Exception as e:
                   logger.error(e)
                   traceback.print_exc()
@@ -2314,6 +2315,8 @@ Resources:
     Properties:
       DatabaseConfiguration:
         !Ref MultipleDatabases
+        # In the future, use the import value from the database stack.
+        #  for now use the drop down value for backward compatibility
         # Fn::ImportValue:
         #   Fn::Sub: "${DatabaseStack}-database-configuration"
       DatabaseHostCore:
@@ -2346,7 +2349,7 @@ Resources:
       ServiceToken: !GetAtt LambdaFunctionSenzingEngineConfigurationJson.Arn
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-lambda-runner-stack-name-as-lower"
+          Value: !Sub "${AWS::StackName}-lambda-runner-senzing-engine-configuration-json"
     Type: Custom::LambdaRunnerSenzingEngineConfigurationJson
 
   LambdaRunnerSshPassword:
@@ -4360,6 +4363,12 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}-certificate-arn"
     Value: !GetAtt IamServerCertificate.Arn
+
+  DatabaseConfiguration:
+    Description: "The configuration this database was set up as.  Help: https://hub.senzing.com/aws-cloudformation-database-cluster/#multipledatabases"
+    Export:
+      Name: !Sub "${AWS::StackName}-database-configuration"
+    Value: !Ref MultipleDatabases
 
   Host:
     Condition: IfUsingWeb
