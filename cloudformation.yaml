@@ -3009,19 +3009,6 @@ Resources:
               awslogs-group: !Ref LogsLogGroupMain
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: service
-          MountPoints:
-            - SourceVolume: senzing-data-version-dir
-              ContainerPath: /opt/senzing/data
-              ReadOnly: true
-            - SourceVolume: senzing-etc-dir
-              ContainerPath: /etc/opt/senzing
-              ReadOnly: true
-            - SourceVolume: senzing-g2-dir
-              ContainerPath: /opt/senzing/g2
-              ReadOnly: true
-            - SourceVolume: senzing-var-dir
-              ContainerPath: /var/opt/senzing
-              ReadOnly: false
           Name: api-server
           PortMappings:
             - ContainerPort: 8250
@@ -3040,31 +3027,6 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-ecs-task-definition-api-server"
       TaskRoleArn: !GetAtt IamRoleApiServer.Arn
-      Volumes:
-        - Name: senzing-data-version-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /data/3.0.0
-        - Name: senzing-etc-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /etc
-        - Name: senzing-g2-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /g2
-        - Name: senzing-var-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /var
     Type: AWS::ECS::TaskDefinition
 
   EcsTaskDefinitionG2ConfigTool:
@@ -3356,16 +3318,6 @@ Resources:
               awslogs-group: !Ref LogsLogGroupMain
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: service
-          MountPoints:
-            - SourceVolume: senzing-etc-dir
-              ContainerPath: /etc/opt/senzing
-              ReadOnly: true
-            - SourceVolume: senzing-g2-dir
-              ContainerPath: /opt/senzing/g2
-              ReadOnly: true
-            - SourceVolume: senzing-var-dir
-              ContainerPath: /var/opt/senzing
-              ReadOnly: false
           Name: redoer-loader
           Privileged: false
           ReadonlyRootFilesystem: false
@@ -3380,25 +3332,6 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-ecs-task-definition-redoer-loader"
       TaskRoleArn: !GetAtt IamRoleRedoer.Arn
-      Volumes:
-        - Name: senzing-etc-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /etc
-        - Name: senzing-g2-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /g2
-        - Name: senzing-var-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /var
     Type: AWS::ECS::TaskDefinition
 
   EcsTaskDefinitionRedoerProducer:
@@ -3435,16 +3368,6 @@ Resources:
               awslogs-group: !Ref LogsLogGroupMain
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: service
-          MountPoints:
-            - SourceVolume: senzing-etc-dir
-              ContainerPath: /etc/opt/senzing
-              ReadOnly: true
-            - SourceVolume: senzing-g2-dir
-              ContainerPath: /opt/senzing/g2
-              ReadOnly: true
-            - SourceVolume: senzing-var-dir
-              ContainerPath: /var/opt/senzing
-              ReadOnly: false
           Name: redoer-producer
           Privileged: false
           ReadonlyRootFilesystem: false
@@ -3459,25 +3382,6 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-ecs-task-definition-redoer-producer"
       TaskRoleArn: !GetAtt IamRoleRedoer.Arn
-      Volumes:
-        - Name: senzing-etc-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /etc
-        - Name: senzing-g2-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /g2
-        - Name: senzing-var-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /var
     Type: AWS::ECS::TaskDefinition
 
   EcsTaskDefinitionSshd:
@@ -3602,16 +3506,6 @@ Resources:
               awslogs-group: !Ref LogsLogGroupMain
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: service
-          MountPoints:
-            - SourceVolume: senzing-etc-dir
-              ContainerPath: /etc/opt/senzing
-              ReadOnly: true
-            - SourceVolume: senzing-g2-dir
-              ContainerPath: /opt/senzing/g2
-              ReadOnly: true
-            - SourceVolume: senzing-var-dir
-              ContainerPath: /var/opt/senzing
-              ReadOnly: false
           Name: stream-loader
           Privileged: false
           ReadonlyRootFilesystem: false
@@ -3626,25 +3520,6 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-ecs-task-definition-stream-loader"
       TaskRoleArn: !GetAtt IamRoleStreamLoader.Arn
-      Volumes:
-        - Name: senzing-etc-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /etc
-        - Name: senzing-g2-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /g2
-        - Name: senzing-var-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /var
     Type: AWS::ECS::TaskDefinition
 
   EcsTaskDefinitionStreamProducer:
