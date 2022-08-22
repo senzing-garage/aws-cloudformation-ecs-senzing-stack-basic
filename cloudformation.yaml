@@ -195,7 +195,7 @@ Mappings:
       # Apt: public.ecr.aws/senzing/apt:1.0.9
       BusyBox: public.ecr.aws/senzing/busybox:1.34.1
       # G2Config: public.ecr.aws/senzing/g2configtool:1.4.6
-      InitContainer: public.ecr.aws/senzing/init-container:1.7.11
+      # InitContainer: public.ecr.aws/senzing/init-container:1.7.11
       Redoer: docker.io/senzing/redoer:staging
       SenzingApiTools: docker.io/senzing/senzingapi-tools:staging
       Sshd: docker.io/senzing/sshd:staging
@@ -4205,11 +4205,11 @@ Outputs:
           - SenzingVersionMap
           - !Ref SenzingVersion
           - BusyBox
-        - ", InitContainer:"
-        - !FindInMap
-          - SenzingVersionMap
-          - !Ref SenzingVersion
-          - InitContainer
+        # - ", InitContainer:"
+        # - !FindInMap
+        #   - SenzingVersionMap
+        #   - !Ref SenzingVersion
+        #   - InitContainer
         - ", Redoer:"
         - !FindInMap
           - SenzingVersionMap
