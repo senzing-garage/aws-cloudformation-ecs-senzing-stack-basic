@@ -176,16 +176,15 @@ Rules:
 Mappings:
   SenzingVersionMap:
     "3.2.0":
-      value: "senzingapi=3.1.2-22182"
-      ApiServer: docker.io/senzing/senzing-poc-server:staging
-      Redoer: docker.io/senzing/redoer:staging
-      SenzingApiTools: docker.io/senzing/senzingapi-tools:staging
-      Sshd: docker.io/senzing/sshd:staging
-      StreamLoader: docker.io/senzing/stream-loader:staging
-      StreamProducer: public.ecr.aws/senzing/stream-producer:1.7.2
-      Swagger: public.ecr.aws/senzing/swagger-ui:v4.12.0
-      WebApp: public.ecr.aws/senzing/entity-search-web-app:2.6.0
-      Xterm: docker.io/senzing/xterm:staging
+      ApiServer: public.ecr.aws/senzing/senzing-poc-server:3.2.2
+      Redoer: public.ecr.aws/senzing/redoer:2.1.0
+      SenzingApiTools: public.ecr.aws/senzing/senzingapi-tools:3.2.0
+      Sshd: public.ecr.aws/senzing/sshd:1.4.0
+      StreamLoader: public.ecr.aws/senzing/stream-loader:2.1.0
+      StreamProducer: public.ecr.aws/senzing/stream-producer:1.7.3
+      Swagger: public.ecr.aws/senzing/swagger-ui:v4.13.2
+      WebApp: public.ecr.aws/senzing/entity-search-web-app:2.7.1
+      Xterm: public.ecr.aws/senzing/xterm:1.4.1
 
   Constants:
     Run:
