@@ -8,10 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+-
+
+## [1.3.0] - 2022-08-29
+
+### Changed in 1.3.0
+
 - added License to config JSON
 - moved to `senzingapi-tools` and `senzingapi-runtime` docker images
 - removed mount points
 - remove EFS, apt, init container, and senzing install
+- updated to use new images
 
 ## [1.2.10] - 2022-07-29
 
