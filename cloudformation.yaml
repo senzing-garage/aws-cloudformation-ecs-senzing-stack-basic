@@ -201,7 +201,6 @@ Mappings:
       Name: basic
     StreamProducer:
       DataSource: TEST
-      EntityType: GENERIC
       InputUrl: https://s3.amazonaws.com/public-read-access/TestDataSets/SenzingTruthSet/truth-set-3.0.0.jsonl
       RecordMax: 0
       RecordMin: 0
@@ -2976,8 +2975,6 @@ Resources:
         - Environment:
             - Name: SENZING_DEFAULT_DATA_SOURCE
               Value: !FindInMap [Constants, StreamProducer, DataSource]
-            - Name: SENZING_DEFAULT_ENTITY_TYPE
-              Value: !FindInMap [Constants, StreamProducer, EntityType]
             - Name: SENZING_INPUT_URL
               Value: !FindInMap [Constants, StreamProducer, InputUrl]
             - Name: SENZING_MONITORING_PERIOD_IN_SECONDS

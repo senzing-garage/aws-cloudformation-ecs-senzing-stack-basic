@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
--
+- removed support for SENZING_DEFAULT_ENTITY_TYPE
 
 ## [1.3.0] - 2022-08-29
 
