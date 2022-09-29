@@ -115,7 +115,8 @@ Parameters:
   SenzingVersion:
     AllowedValues:
       - "3.2.0"
-    Default: "3.2.0"
+      - "3.3.0"
+    Default: "3.3.0"
     Description: "Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzingversion"
     Type: String
 
@@ -176,6 +177,16 @@ Rules:
 Mappings:
   SenzingVersionMap:
     "3.2.0":
+      ApiServer: public.ecr.aws/senzing/senzing-poc-server:3.2.2
+      Redoer: public.ecr.aws/senzing/redoer:2.1.0
+      SenzingApiTools: public.ecr.aws/senzing/senzingapi-tools:3.2.0
+      Sshd: public.ecr.aws/senzing/sshd:1.4.0
+      StreamLoader: public.ecr.aws/senzing/stream-loader:2.1.0
+      StreamProducer: public.ecr.aws/senzing/stream-producer:1.7.3
+      Swagger: public.ecr.aws/senzing/swagger-ui:v4.13.2
+      WebApp: public.ecr.aws/senzing/entity-search-web-app:2.7.1
+      Xterm: public.ecr.aws/senzing/xterm:1.4.1
+    "3.3.0":
       ApiServer: public.ecr.aws/senzing/senzing-poc-server:3.3.1
       Redoer: public.ecr.aws/senzing/redoer:2.1.1
       SenzingApiTools: public.ecr.aws/senzing/senzingapi-tools:3.3.0
