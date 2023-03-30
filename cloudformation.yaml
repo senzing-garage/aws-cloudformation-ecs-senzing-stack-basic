@@ -667,6 +667,7 @@ Resources:
       PolicyDocument:
         Statement:
           - Action:
+              - sqs:ChangeMessageVisibility
               - sqs:DeleteMessage
               - sqs:GetQueueAttributes
               - sqs:ReceiveMessage
