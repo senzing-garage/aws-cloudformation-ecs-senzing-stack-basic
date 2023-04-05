@@ -7,7 +7,7 @@ AWSTemplateFormatVersion: 2010-09-09
 #     aws cloudformation validate-template: https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudformation/validate-template.html
 
 Description: >-
-  Senzing aws-cloudformation-ecs-senzing-stack-basic: 1.3.4
+  Senzing aws-cloudformation-ecs-senzing-stack-basic: 1.3.5
   For more information see
   https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic
 
@@ -119,7 +119,8 @@ Parameters:
       - "3.3.1"
       - "3.3.2"
       - "3.4.0"
-    Default: "3.4.0"
+      - "3.5.0"
+    Default: "3.5.0"
     Description: "Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzingversion"
     Type: String
 
@@ -229,6 +230,16 @@ Mappings:
       Swagger: public.ecr.aws/senzing/swagger-ui:v4.13.2
       WebApp: public.ecr.aws/senzing/entity-search-web-app:2.7.4
       Xterm: public.ecr.aws/senzing/xterm:1.4.6
+    "3.5.0":
+      ApiServer: public.ecr.aws/senzing/senzing-poc-server:3.4.0
+      Redoer: public.ecr.aws/senzing/redoer:2.1.6
+      SenzingApiTools: public.ecr.aws/senzing/senzingapi-tools:3.5.0
+      Sshd: public.ecr.aws/senzing/sshd:1.4.6
+      StreamLoader: public.ecr.aws/senzing/stream-loader:2.2.5
+      StreamProducer: public.ecr.aws/senzing/stream-producer:1.8.5
+      Swagger: public.ecr.aws/senzing/swagger-ui:v4.18.2
+      WebApp: public.ecr.aws/senzing/entity-search-web-app:2.8.0
+      Xterm: public.ecr.aws/senzing/xterm:1.4.8
 
   Constants:
     Run:
