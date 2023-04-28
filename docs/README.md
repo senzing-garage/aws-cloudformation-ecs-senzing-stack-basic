@@ -124,13 +124,13 @@ describing where we can improve.   Now on with the show...
                [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
                Cloudformation stack.
                Example:  `senzing-db`
-    2. At lower-right, click "Next" button.
-2. In **Configure stack options**
     1. At lower-right, click "Next" button.
-3. In **Review senzing-basic**
+1. In **Configure stack options**
+    1. At lower-right, click "Next" button.
+1. In **Review senzing-basic**
     1. Near the bottom, in **Capabilities**
         1. Check ":ballot_box_with_check: I acknowledge that AWS CloudFormation might create IAM resources."
-    2. At lower-right, click "Create stack" button.
+    1. At lower-right, click "Create stack" button.
 
 ## Using deployment
 
@@ -150,8 +150,6 @@ describing where we can improve.   Now on with the show...
 ## Additional topics
 
 1. [How to load AWS Cloudformation queue](https://github.com/Senzing/knowledge-base/blob/main/HOWTO/load-aws-cloudformation-queue.md)
-1. [How to migrate Senzing in AWS Cloudformation](https://github.com/Senzing/knowledge-base/blob/main/HOWTO/migrate-senzing-in-cloudformation.md)
-1. [How to update Senzing license](https://github.com/Senzing/knowledge-base/blob/main/HOWTO/update-senzing-license.md)
 
 ### Review AWS Cloudformation
 
