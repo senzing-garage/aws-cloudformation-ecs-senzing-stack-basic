@@ -25,7 +25,6 @@ The `aws-cloudformation-ecs-senzing-stack-basic` demonstration is an AWS Cloudfo
 1. AWS services
     1. AWS Cognito
     1. AWS Elastic Container Service (ECS) Fargate
-    1. AWS Elastic File System (EFS)
     1. AWS Simple Queue Service (SQS)
 1. Senzing services
     1. Senzing API server
@@ -34,9 +33,9 @@ The `aws-cloudformation-ecs-senzing-stack-basic` demonstration is an AWS Cloudfo
     1. Senzing SSH access
     1. Senzing Stream-Loader
     1. Senzing Xterm
-    1. SwaggerUI
 1. Optional services:
     1. Senzing Stream-producer
+    1. SwaggerUI
 
 The following diagram shows the relationship of the docker containers in this docker composition.
 Arrows represent data flow.
@@ -46,7 +45,6 @@ Arrows represent data flow.
 This docker formation brings up the following docker containers:
 
 1. *[senzing/entity-web-search-app](https://github.com/Senzing/entity-search-web-app)*
-1. *[senzing/jupyter](https://github.com/Senzing/docker-jupyter)*
 1. *[senzing/redoer](https://github.com/Senzing/redoer)*
 1. *[senzing/senzing-api-server](https://github.com/Senzing/senzing-api-server)*
 1. *[senzing/sshd](https://github.com/Senzing/docker-sshd)*
@@ -105,29 +103,28 @@ describing where we can improve.   Now on with the show...
 1. Visit [AWS Cloudformation with Senzing template](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=senzing-basic&templateURL=https://s3.amazonaws.com/public-read-access/aws-cloudformation-ecs-senzing-stack-basic/cloudformation.yaml)
 1. At lower-right, click on "Next" button.
 1. In **Specify stack details**
+    1. In **Stack name**
+        1. Choose a stack name that is unique to you and 21 characters or less.  (Several resource types have a limit of 32 character names. The CFT uses the stack name and an 11 character suffix to name resources uniquely.)
     1. In **Parameters**
-        1. In **Security responsibility**
-            1. Understand the nature of the security in the deployment.
-            1. Once understood, enter "I AGREE".
         1. In **Senzing installation**
-            1. Accept the End User License Agreement
-        1. In **Security**
-            1. Enter your email address.  Example: `me@example.com`
-            1. Enter a
-               [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
-               that allows access from certain IP Addresses.
-               For instance `0.0.0.0/0` allows access from anywhere,
-               but is considered insecure.
-               `1.2.3.4/32` allows access from only one IP address, `1.2.3.4`.
+            1. Accept the End User License Agreement.
+            1. Optionally, choose a version of Senzing to install.
+            1. Optionally, add a license string.
         1. In **Identify existing resources**
             1. Enter the stack name of the previously deployed
                [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
-               Cloudformation stack.
+               Cloudformation stack
                Example:  `senzing-db`
+        1. In **Security**
+            1. Provide the email address for the administrative user.  Example: `me@example.com`
+            1. Provide the permitted IP address block allowed to connect using CIDR notation.  Note: to open the installation to any IP address use: `0.0.0.0/0`.  For more on CIDR, see [Classless Inter-Domain Routing](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+        1. In **Security responsibility**
+            1. Understand the nature of the security in the deployment.
+            1. Once understood, enter "I AGREE".
     1. At lower-right, click "Next" button.
 1. In **Configure stack options**
     1. At lower-right, click "Next" button.
-1. In **Review senzing-basic**
+1. In **Review senzing stack-basic**
     1. Near the bottom, in **Capabilities**
         1. Check ":ballot_box_with_check: I acknowledge that AWS CloudFormation might create IAM resources."
     1. At lower-right, click "Create stack" button.
@@ -170,8 +167,6 @@ template can be see in the [AWS Management Console](https://console.aws.amazon.c
 1. Elastic Container Service (ECS)
     1. [Clusters](https://console.aws.amazon.com/ecs/home?#/clusters)
     1. [Task Definitions](https://console.aws.amazon.com/ecs/home?#/taskDefinitions)
-1. Elastic File System (EFS)
-    1. [File systems](https://console.aws.amazon.com/efs/home?#/filesystems)
 1. Identity and Access Management (IAM)
     1. Certificates
     1. [Policies](https://console.aws.amazon.com/iam/home?#/policies)
@@ -259,7 +254,7 @@ Technical information on AWS Cloudformation parameters can be seen at
    [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
    cloudformation template.
    The DatabaseStack exported output values are used by the
-   [aws-cloudformation-ecs-senzing-stack-basic](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic).
+   [aws-cloudformation-ecs-senzing-stack-basic](https://github.com/Senzing/aws-cloudformation-webapp-demo).
 1. **Required:** Yes
 1. **Type:** String
 1. **Example:** `senzing-db`
@@ -379,7 +374,6 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Details:**
    More information at [AWS Load Balancers console](https://console.aws.amazon.com/ec2/v2/home?#LoadBalancers:).
    Also used as the `host` value when using [UrlSwagger](#urlswagger).
-
 ### QueueDeadLetter
 
 1. **Synopsis:**
@@ -477,12 +471,6 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Details:**
    For more URIs, see
    [SwaggerUrl output value](#urlswagger).
-
-### UrlJupyter
-
-1. **Synopsis:**
-   A URL showing how to reach the
-   [Senzing Jupyter notebooks](https://github.com/Senzing/docker-jupyter).
 
 ### UrlPrivateApiServer
 
