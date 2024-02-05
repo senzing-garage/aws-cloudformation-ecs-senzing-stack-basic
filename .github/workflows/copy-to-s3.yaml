@@ -24,7 +24,7 @@ jobs:
 
       - name: Get the version of the just published release
         id: get_version
-        run: echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+        run: echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
 
       - name: Copy ${{ env.FILE_TO_COPY_1 }}.yaml to S3 and make public
         run: |
