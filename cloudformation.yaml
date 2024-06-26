@@ -123,7 +123,8 @@ Parameters:
       - '3.5.2'
       - '3.5.3'
       - '3.6.0'
-    Default: '3.6.0'
+      - '3.10.3'
+    Default: '3.10.3'
     Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzingversion'
     Type: String
 
