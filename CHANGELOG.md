@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [1.3.9] - 2023-06-26
+
+### Changed in 1.3.9
+
+- updated to Senzing 3.10.3
+- updated docker images
+- removed wss support
+
 ## [1.3.8] - 2023-06-30
 
 ### Changed in 1.3.8
