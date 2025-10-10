@@ -16,6 +16,7 @@
     "EKEY",
     "Fargate",
     "ICLA",
+    "ignorefile",
     "isinstance",
     "isoformat",
     "libfeat",
@@ -37,5 +38,7 @@
     "WATCHLIST",
     "withinfo"
   ],
-  "ignorePaths": [".git/**"]
+  "ignorePaths": [
+    ".git/**"
+  ]
 }
